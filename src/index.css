@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow-y: hidden;
+}
+
+@layer utilities {
+  .scrollbar-brand {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(59, 130, 246, 0.6) transparent;
+  }
+
+  .scrollbar-brand::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-brand::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-brand::-webkit-scrollbar-thumb {
+    background-color: rgba(59, 130, 246, 0.6);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar-brand::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(59, 130, 246, 0.85);
+  }
+}
