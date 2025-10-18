@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Bounds3D, ParsedGCode } from '../utils/readGCode';
 
 type InfoPanelFile = Pick<ParsedGCode, 'layers' | 'estimatedHeight' | 'bounds' | 'metadata' | 'totalCommands'> & {
@@ -55,6 +56,8 @@ const formatBounds = (bounds: Bounds3D | null): string | null => {
 };
 
 const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) => {
+  const { t } = useTranslation();
+
   const payload = useMemo(() => {
     return files.map((file) => {
       const layerCount =
@@ -86,21 +89,18 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
 
   return (
     <aside
-      aria-label="Dettagli G-code"
+      aria-label={t('infoPanel.title')}
       className="relative flex h-full w-80 flex-shrink-0 flex-col overflow-hidden border-l border-slate-800 bg-slate-900/80 text-slate-200 backdrop-blur transition-all duration-300"
     >
       <header className="border-b border-slate-800 px-4 py-3">
-        <p className="text-sm font-semibold text-white">Dettagli G-code</p>
+        <p className="text-sm font-semibold text-white">{t('infoPanel.title')}</p>
         <p className="text-xs text-slate-400">
-          Layer corrente: <span className="font-medium text-slate-200">{currentLayer}</span> su{' '}
-          {maxLayer}
+          {t('infoPanel.currentLayer', { current: currentLayer, max: maxLayer })}
         </p>
       </header>
       <div className="scrollbar-brand flex-1 overflow-y-auto px-4 py-4">
         {payload.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Aggiungi un file visibile per esplorare i metadati del G-code.
-          </p>
+          <p className="text-sm text-slate-500">{t('infoPanel.empty')}</p>
         ) : (
           <div className="space-y-6">
             {payload.map((file) => (
@@ -118,16 +118,22 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
                 </div>
                 <dl className="mt-3 space-y-2 text-xs">
                   <div className="flex flex-col gap-1">
-                    <dt className="uppercase tracking-wide text-slate-500">Layer totali (calcolati)</dt>
+                    <dt className="uppercase tracking-wide text-slate-500">
+                      {t('infoPanel.totalLayers')}
+                    </dt>
                     <dd className="font-medium text-slate-200">{file.layerCount}</dd>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <dt className="uppercase tracking-wide text-slate-500">Comandi G-code</dt>
+                    <dt className="uppercase tracking-wide text-slate-500">
+                      {t('infoPanel.totalCommands')}
+                    </dt>
                     <dd className="font-medium text-slate-200">{file.totalCommands}</dd>
                   </div>
                   {file.estimatedHeight !== null && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">Altezza stimata</dt>
+                      <dt className="uppercase tracking-wide text-slate-500">
+                        {t('infoPanel.estimatedHeight')}
+                      </dt>
                       <dd className="font-medium text-slate-200">
                         {file.estimatedHeight.toFixed(2)} mm
                       </dd>
@@ -135,7 +141,9 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
                   )}
                   {file.boundsSummary && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">Bounding box</dt>
+                      <dt className="uppercase tracking-wide text-slate-500">
+                        {t('infoPanel.boundingBox')}
+                      </dt>
                       <dd className="font-medium text-slate-200">{file.boundsSummary}</dd>
                     </div>
                   )}
@@ -161,7 +169,9 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
                   })}
                   {file.additionalEntries.length > 0 && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">Altri campi</dt>
+                      <dt className="uppercase tracking-wide text-slate-500">
+                        {t('infoPanel.additionalFields')}
+                      </dt>
                       <dd className="space-y-1">
                         {file.additionalEntries.map(([key, value]) => (
                           <div key={key} className="rounded-md border border-slate-800 bg-slate-950/70 p-2">

@@ -1,50 +1,51 @@
 # gcode-file-viewer
 
-Visualizzatore G-code web-based scritto in TypeScript con Vite, React, Tailwind CSS, Three.js e il parser `gcode-parser`. Consente di caricare piu file `.gcode`, analizzarne i layer, gestire la visibilita e visualizzare il percorso di stampa in 3D direttamente dal browser.
+Web-based G-code viewer built with TypeScript, Vite, React, Tailwind CSS, Three.js and the `gcode-parser` package. It lets you upload multiple `.gcode` files, analyse their layers, and visualise toolpaths directly in the browser with multilingual support (English and Italian).
 
-## Requisiti
+## Requirements
 
 - Node.js >= 18
 - npm >= 9
 
-## Installazione
+## Installation
 
 ```bash
 npm install
 ```
 
-## Comandi utili
+## Available scripts
 
-- `npm run dev` avvia l'ambiente di sviluppo su http://localhost:5173
-- `npm run build` genera la build di produzione in `dist/`
-- `npm run preview` esegue l'anteprima della build prodotta
-- `npm run lint` esegue i controlli statici con ESLint
-- `npm run format` applica le regole ESLint in modalita fix
-- `npm run start` alias di `npm run dev`
+- `npm run dev` – start the development server on http://localhost:5173
+- `npm run build` – create a production build in `dist/`
+- `npm run preview` – serve the production build locally
+- `npm run lint` – run ESLint with the configured rules
+- `npm run format` – apply ESLint auto-fixes
+- `npm run start` – alias for `npm run dev`
 
-## Struttura progetto
+## Project structure
 
-- `src/App.tsx` composizione della UI principale (header, sidebar, viewer)
-- `src/context/FileStore.tsx` gestione globale dello stato dei file tramite React Context
-- `src/components/*` upload, sidebar, wrapper del viewer 3D
-- `src/utils/readGCode.ts` parsing dei comandi con `gcode-parser` e costruzione dei layer/toolpath
-- `src/service-worker.ts` caching statico (registrato in produzione)
+- `src/App.tsx` – top-level layout (header, sidebar, 3D viewer, info panel)
+- `src/context/FileStore.tsx` – global state for uploaded files
+- `src/components/*` – UI building blocks (uploader, sidebar, viewer wrapper, language selector)
+- `src/utils/readGCode.ts` – G-code parsing with `gcode-parser`
+- `src/i18n.ts` – i18next configuration and translation resources (EN/IT)
+- `src/service-worker.ts` – static asset caching (enabled in production)
+- `src/stubs/*` – lightweight browser stubs for Node.js modules required by `gcode-parser`
 
-## Caratteristiche principali
+## Key features
 
-- Upload multiplo via drag & drop e input tradizionale
-- Gestione visibilita, rimozione e reset dei file caricati
-- Colorazione automatica per file multipli e slicing per layer
-- Controlli rapidi per zoom-to-fit, reset camera e fullscreen
-- Pannello info laterale con metadati estratti dal G-code (generatore, layer totali, bounding box, ecc.)
-- Supporto PWA base con manifest e service worker
+- Drag & drop or manual upload of multiple `.gcode` files
+- Global file management (select, remove, clear list) via sidebar
+- Interactive Three.js viewer with layer slider, zoom-to-fit, camera reset, fullscreen
+- Detailed metadata panel powered by `react-i18next`, translated in English and Italian
+- PWA-ready setup with manifest, icons, and service worker
 
-## Note sull'uso di `gcode-parser`
+## Notes on `gcode-parser`
 
-Il parsing viene eseguito tramite `gcode-parser` con fallback parziale in caso di G-code non standard. Se vengono aggiunti comandi custom, adatta `src/utils/readGCode.ts` per interpretarli correttamente e includerli nel toolpath renderizzato.
+Parsing is handled by `gcode-parser`. If you rely on custom commands, extend `src/utils/readGCode.ts` to interpret them and feed the 3D renderer accordingly.
 
-Il pacchetto dipende da moduli Node.js (`fs`, `stream`, `events`, `timers`): per l'esecuzione nel browser sono fornite sostituzioni minime in `src/stubs/`. Le funzioni legate a I/O file dei moduli originali non sono disponibili nel client.
+The package depends on Node.js modules (`fs`, `stream`, `events`, `timers`). Minimal browser stubs are provided in `src/stubs/`. File I/O APIs from the Node modules are not available in the browser.
 
-## Licenza
+## License
 
-Distribuito secondo i termini indicati nel file `LICENSE`.
+Distributed under the terms described in the `LICENSE` file.
