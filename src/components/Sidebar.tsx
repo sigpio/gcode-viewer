@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useFileStore } from '../context/FileStore';
 
 type SidebarProps = {
@@ -7,16 +8,11 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
-  const {
-    files,
-    activeFileId,
-    setActiveFile,
-    removeFile,
-    clearAll
-  } = useFileStore();
+  const { files, activeFileId, setActiveFile, removeFile, clearAll } = useFileStore();
+  const { t } = useTranslation();
 
-  const handleSelect = (id: string) => {
-    setActiveFile(id);
+  const handleSelect = (fileId: string) => {
+    setActiveFile(fileId);
   };
 
   return (
@@ -26,22 +22,20 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
     >
       <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
-          File caricati
+          {t('sidebar.title')}
         </h2>
         <button
           type="button"
           onClick={onClose}
           className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-white lg:hidden"
         >
-          Chiudi
+          {t('sidebar.close')}
         </button>
       </div>
 
       <div className="scrollbar-brand flex flex-1 flex-col overflow-y-auto">
         {files.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-slate-400">
-            Nessun file. Carica un file .gcode per iniziare l&apos;analisi.
-          </p>
+          <p className="px-4 py-6 text-sm text-slate-400">{t('sidebar.empty')}</p>
         ) : (
           <ul className="divide-y divide-slate-800">
             {files.map((file) => {
@@ -61,10 +55,10 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
                         ? 'border-brand-light bg-brand/20 text-brand-light'
                         : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-brand-light hover:text-brand-light'
                     }`}
-                    title="Visualizza file"
+                    title={t('sidebar.view')}
                     aria-pressed={isActive}
                   >
-                    {isActive ? 'ATT' : 'SEL'}
+                    {isActive ? t('sidebar.activeTag') : t('sidebar.selectTag')}
                   </button>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-medium text-white">{file.name}</span>
@@ -76,9 +70,8 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
                     type="button"
                     onClick={() => removeFile(file.id)}
                     className="rounded-md border border-transparent px-2 py-1 text-xs text-slate-400 hover:border-red-500 hover:text-red-400"
-                    title="Rimuovi file"
                   >
-                    Rimuovi
+                    {t('sidebar.remove')}
                   </button>
                 </li>
               );
@@ -94,7 +87,7 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
             onClick={clearAll}
             className="w-full rounded-md border border-red-500 px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
           >
-            Svuota lista
+            {t('sidebar.clear')}
           </button>
         </div>
       )}

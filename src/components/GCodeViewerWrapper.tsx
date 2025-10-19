@@ -11,6 +11,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import type { GCodeFileRecord } from '../context/FileStore';
 import { parseGCode, type ParsedGCode, type ToolpathSegment } from '../utils/readGCode';
 import InfoPanel from './InfoPanel';
+import { useTranslation } from 'react-i18next';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -153,32 +154,40 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const [isFullscreen, setFullscreen] = useState<boolean>(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [isInfoOpen, setInfoOpen] = useState<boolean>(true);
+  const { t } = useTranslation();
 
-  const parsedResult = useMemo((): { data: ParsedFile | null; error: string | null } => {
-    if (!file) {
-      return { data: null, error: null };
-    }
-    try {
-      const parsed = parseGCode(file.text);
-      return {
-        data: {
-          ...parsed,
-          meta: { id: file.id, name: file.name }
-        },
-        error: null
-      };
-    } catch (error) {
-      console.error(`Errore durante il parsing di ${file.name}`, error);
-      return {
-        data: null,
-        error: `Errore durante il parsing del file "${file.name}". Alcuni percorsi potrebbero non essere visibili.`
-      };
-    }
-  }, [file]);
+  const parsedResult = useMemo(
+    (): { data: ParsedFile | null; errorFile: string | null } => {
+      if (!file) {
+        return { data: null, errorFile: null };
+      }
+      try {
+        const parsed = parseGCode(file.text);
+        return {
+          data: {
+            ...parsed,
+            meta: { id: file.id, name: file.name }
+          },
+          errorFile: null
+        };
+      } catch (error) {
+        console.error(`Failed to parse G-code file ${file.name}`, error);
+        return {
+          data: null,
+          errorFile: file.name
+        };
+      }
+    },
+    [file]
+  );
 
   useEffect(() => {
-    setParseError(parsedResult.error);
-  }, [parsedResult.error]);
+    if (parsedResult.errorFile) {
+      setParseError(t('viewer.parseError', { file: parsedResult.errorFile }));
+    } else {
+      setParseError(null);
+    }
+  }, [parsedResult.errorFile, t]);
 
   useEffect(() => {
     const data = parsedResult.data;
@@ -454,7 +463,8 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/60 px-4 py-3">
           <div className="flex items-center gap-3">
             <label className="text-sm text-slate-300" htmlFor="layer-range">
-              Layer mostrato: <span className="font-semibold text-white">{layerSlice}</span> /{' '}
+              {t('viewer.displayedLayer')}:{' '}
+              <span className="font-semibold text-white">{layerSlice}</span> /{' '}
               <span>{maxLayerDisplay}</span>
             </label>
             <input
@@ -476,7 +486,9 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
                 aria-expanded={isSidebarOpen ?? false}
                 className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800 lg:hidden"
               >
-                {isSidebarOpen ? 'Nascondi lista file' : 'Mostra lista file'}
+                {isSidebarOpen
+                  ? t('viewer.hideSidebar')
+                  : t('viewer.showSidebar')}
               </button>
             )}
             <button
@@ -485,28 +497,28 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
               aria-expanded={isInfoOpen}
               className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
             >
-              {isInfoOpen ? 'Nascondi info' : 'Mostra info'}
+              {isInfoOpen ? t('viewer.hideInfo') : t('viewer.showInfo')}
             </button>
             <button
               type="button"
               onClick={handleZoomToFit}
               className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
             >
-              Zoom to fit
+              {t('viewer.zoomToFit')}
             </button>
             <button
               type="button"
               onClick={handleResetCamera}
               className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
             >
-              Reset camera
+              {t('viewer.resetCamera')}
             </button>
             <button
               type="button"
               onClick={toggleFullscreen}
               className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
             >
-              {isFullscreen ? 'Esci fullscreen' : 'Fullscreen'}
+              {isFullscreen ? t('viewer.exitFullscreen') : t('viewer.fullscreen')}
             </button>
           </div>
         </div>

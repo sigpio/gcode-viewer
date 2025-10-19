@@ -1,4 +1,5 @@
 import { ChangeEvent, DragEvent, useCallback, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFileStore } from '../context/FileStore';
 
 const readFileAsText = (file: File): Promise<string> =>
@@ -16,6 +17,7 @@ const FileUploader = () => {
   const { addFile } = useFileStore();
   const [isDragging, setDragging] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { t } = useTranslation();
 
   const handleFiles = useCallback(
     async (fileList: FileList | null) => {
@@ -32,7 +34,7 @@ const FileUploader = () => {
       try {
         await Promise.all(tasks);
       } catch (error) {
-        console.error('Errore durante la lettura dei file G-code', error);
+        console.error(t('uploader.readError'), error);
       } finally {
         if (inputRef.current) {
           inputRef.current.value = '';
@@ -40,7 +42,7 @@ const FileUploader = () => {
         setDragging(false);
       }
     },
-    [addFile]
+    [addFile, t]
   );
 
   const onInputChange = useCallback(
@@ -99,9 +101,9 @@ const FileUploader = () => {
           onClick={() => inputRef.current?.click()}
           className="font-medium text-white"
         >
-          Carica file
+          {t('uploader.button')}
         </button>
-        <span className="text-xs text-slate-400">Trascina qui i tuoi .gcode</span>
+        <span className="text-xs text-slate-400">{t('uploader.hint')}</span>
       </div>
     </div>
   );
