@@ -42,7 +42,7 @@ const FileUploader = () => {
         setDragging(false);
       }
     },
-    [addFile]
+    [addFile, t]
   );
 
   const onInputChange = useCallback(
