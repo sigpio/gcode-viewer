@@ -9,9 +9,18 @@ import {
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { GCodeFileRecord } from '../context/FileStore';
-import { parseGCode, type ParsedGCode, type ToolpathSegment } from '../utils/readGCode';
+import { parseGCode } from '../utils/readGCode';
 import InfoPanel from './InfoPanel';
 import { useTranslation } from 'react-i18next';
+import type { ParsedFile } from './viewer/types';
+import {
+  DEFAULT_TOOLPATH_COLOR,
+  EXTRUSION_RADIUS,
+  TRAVEL_RADIUS,
+  collectSegments,
+  createSegmentMesh
+} from './viewer/toolpathGeometry';
+import { createAxisLabel, disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -29,180 +38,6 @@ type ThreeContext = {
   animationId: number | null;
 };
 
-type ParsedFile = ParsedGCode & {
-  readonly meta: Pick<GCodeFileRecord, 'id' | 'name'>;
-};
-
-const DEFAULT_TOOLPATH_COLOR = '#3b82f6';
-const EXTRUSION_RADIUS = 0.4;
-const TRAVEL_RADIUS = EXTRUSION_RADIUS * 0.4;
-const SEGMENT_RADIAL_SEGMENTS = 10;
-
-const UP_AXIS = new THREE.Vector3(0, 1, 0);
-const TEMP_START = new THREE.Vector3();
-const TEMP_END = new THREE.Vector3();
-const TEMP_DIRECTION = new THREE.Vector3();
-const TEMP_MIDPOINT = new THREE.Vector3();
-const TEMP_QUATERNION = new THREE.Quaternion();
-const TEMP_SCALE = new THREE.Vector3();
-const TEMP_MATRIX = new THREE.Matrix4();
-
-type SegmentMeshConfig = {
-  radius: number;
-  color: THREE.ColorRepresentation;
-  opacity?: number;
-  metalness?: number;
-  roughness?: number;
-};
-
-const createSegmentMesh = (
-  segments: ToolpathSegment[],
-  config: SegmentMeshConfig
-): THREE.InstancedMesh<THREE.CylinderGeometry, THREE.MeshStandardMaterial> | null => {
-  if (segments.length === 0) {
-    return null;
-  }
-
-  const geometry = new THREE.CylinderGeometry(
-    config.radius,
-    config.radius,
-    1,
-    SEGMENT_RADIAL_SEGMENTS,
-    1,
-    false
-  );
-  geometry.computeVertexNormals();
-
-  const material = new THREE.MeshStandardMaterial({
-    color: config.color,
-    metalness: config.metalness ?? 0.15,
-    roughness: config.roughness ?? 0.55,
-    opacity: config.opacity ?? 1,
-    transparent: (config.opacity ?? 1) < 1
-  });
-  material.side = THREE.DoubleSide;
-
-  const mesh = new THREE.InstancedMesh(geometry, material, segments.length);
-  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-  mesh.castShadow = false;
-  mesh.receiveShadow = false;
-
-  for (let index = 0; index < segments.length; index += 1) {
-    const segment = segments[index];
-    TEMP_START.fromArray(segment.start);
-    TEMP_END.fromArray(segment.end);
-    TEMP_DIRECTION.subVectors(TEMP_END, TEMP_START);
-    const length = TEMP_DIRECTION.length();
-    if (length <= Number.EPSILON) {
-      TEMP_MATRIX.identity();
-      mesh.setMatrixAt(index, TEMP_MATRIX);
-      continue;
-    }
-    TEMP_DIRECTION.normalize();
-    TEMP_QUATERNION.setFromUnitVectors(UP_AXIS, TEMP_DIRECTION);
-    TEMP_MIDPOINT.addVectors(TEMP_START, TEMP_END).multiplyScalar(0.5);
-    TEMP_SCALE.set(1, length, 1);
-    TEMP_MATRIX.compose(TEMP_MIDPOINT, TEMP_QUATERNION, TEMP_SCALE);
-    mesh.setMatrixAt(index, TEMP_MATRIX);
-  }
-  mesh.instanceMatrix.needsUpdate = true;
-  return mesh;
-};
-
-const collectSegments = (data: ParsedFile, maxLayer: number): ToolpathSegment[] => {
-  if (data.layers.length === 0) {
-    return [];
-  }
-  return data.layers
-    .filter((layer) => layer.index <= maxLayer)
-    .flatMap((layer) => layer.segments);
-};
-
-const fitCameraToBox = (
-  camera: THREE.PerspectiveCamera,
-  controls: OrbitControls,
-  box: THREE.Box3
-) => {
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-  const maxSize = Math.max(size.x, size.y, size.z, 1);
-
-  controls.target.copy(center);
-
-  const distance = maxSize * 1.5;
-  camera.position.set(center.x + distance, center.y + distance, center.z + distance);
-  camera.near = Math.max(distance / 200, 0.1);
-  camera.far = Math.max(distance * 20, 2000);
-  camera.updateProjectionMatrix();
-  controls.update();
-};
-
-const disposeGroupChildren = (group: THREE.Group) => {
-  while (group.children.length > 0) {
-    const child = group.children[0]!;
-    group.remove(child);
-    if (child instanceof THREE.InstancedMesh) {
-      child.geometry.dispose();
-      if (Array.isArray(child.material)) {
-        child.material.forEach((material) => material.dispose());
-      } else {
-        child.material.dispose();
-      }
-      continue;
-    }
-    if (child instanceof THREE.LineSegments) {
-      child.geometry.dispose();
-      if (Array.isArray(child.material)) {
-        child.material.forEach((material) => material.dispose());
-      } else {
-        child.material.dispose();
-      }
-    } else if (child instanceof THREE.Sprite) {
-      if (child.material.map) {
-        child.material.map.dispose();
-      }
-      child.material.dispose();
-    }
-  }
-};
-
-const createAxisLabel = (text: string, color: string, position: THREE.Vector3): THREE.Sprite => {
-  const size = 128;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const context = canvas.getContext('2d');
-  if (!context) {
-    throw new Error('Canvas 2D context non disponibile.');
-  }
-  context.clearRect(0, 0, size, size);
-  context.fillStyle = 'rgba(15, 23, 42, 0.85)';
-  context.fillRect(0, 0, size, size);
-  context.strokeStyle = color;
-  context.lineWidth = 6;
-  context.strokeRect(12, 12, size - 24, size - 24);
-  context.fillStyle = color;
-  context.font = 'bold 72px "Segoe UI", sans-serif';
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.fillText(text, size / 2, size / 2);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.anisotropy = 4;
-  const material = new THREE.SpriteMaterial({
-    map: texture,
-    depthTest: false,
-    depthWrite: false,
-    transparent: true
-  });
-  const sprite = new THREE.Sprite(material);
-  sprite.position.copy(position);
-  const spriteScale = 8;
-  sprite.scale.set(spriteScale, spriteScale, spriteScale);
-  sprite.renderOrder = 5;
-  sprite.userData.texture = texture;
-  return sprite;
-};
 
 const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProps) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
