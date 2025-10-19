@@ -47,7 +47,8 @@ const resources = {
         totalCommands: 'G-code commands',
         estimatedHeight: 'Estimated height',
         boundingBox: 'Bounding box',
-        additionalFields: 'Other fields'
+        additionalFields: 'Other fields',
+        showTravelMoves: 'Show extrusion travel'
       },
       language: {
         label: 'Language',
@@ -101,7 +102,8 @@ const resources = {
         totalCommands: 'Comandi G-code',
         estimatedHeight: 'Altezza stimata',
         boundingBox: 'Bounding box',
-        additionalFields: 'Altri campi'
+        additionalFields: 'Altri campi',
+        showTravelMoves: 'Mostra movimenti estrusore'
       },
       language: {
         label: 'Lingua',

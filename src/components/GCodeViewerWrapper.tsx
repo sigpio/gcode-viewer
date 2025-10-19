@@ -154,6 +154,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const [isFullscreen, setFullscreen] = useState<boolean>(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [isInfoOpen, setInfoOpen] = useState<boolean>(true);
+  const [showTravelMoves, setShowTravelMoves] = useState<boolean>(true);
   const { t } = useTranslation();
 
   const parsedResult = useMemo(
@@ -366,7 +367,11 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (segments.length === 0) {
       return;
     }
-    const geometry = buildGeometry(segments, DEFAULT_TOOLPATH_COLOR);
+    const renderSegments = showTravelMoves ? segments : segments.filter((segment) => segment.extruding);
+    if (renderSegments.length === 0) {
+      return;
+    }
+    const geometry = buildGeometry(renderSegments, DEFAULT_TOOLPATH_COLOR);
     const material = new THREE.LineBasicMaterial({
       vertexColors: true,
       transparent: true,
@@ -380,7 +385,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (!bounds.isEmpty()) {
       fitCameraToBox(viewer.camera, viewer.controls, bounds);
     }
-  }, [parsedResult.data, layerSlice, maxLayer]);
+  }, [parsedResult.data, layerSlice, maxLayer, showTravelMoves]);
 
   const handleLayerChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -436,6 +441,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     } else {
       void wrapperRef.current.requestFullscreen();
     }
+  }, []);
+
+  const handleTravelMovesChange = useCallback((visible: boolean) => {
+    setShowTravelMoves(visible);
   }, []);
 
   const maxLayerDisplay = Math.max(maxLayer, 0);
@@ -538,6 +547,8 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
         isOpen={isInfoOpen}
         currentLayer={Math.min(layerSlice, maxLayerDisplay)}
         maxLayer={maxLayerDisplay}
+        showTravelMoves={showTravelMoves}
+        onTravelMovesChange={handleTravelMovesChange}
       />
     </div>
   );
