@@ -187,7 +187,18 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
       return;
     }
 
-    const segmentBounds = computeSegmentsBounds(visibleSegments);
+    const hasExtrusionSegments = visibleSegments.some((segment) => segment.extruding);
+    const hasTravelSegments = visibleSegments.some((segment) => !segment.extruding);
+    let boundsPadding = 0;
+    if (hasExtrusionSegments && hasTravelSegments) {
+      boundsPadding = Math.max(EXTRUSION_RADIUS, TRAVEL_RADIUS);
+    } else if (hasExtrusionSegments) {
+      boundsPadding = EXTRUSION_RADIUS;
+    } else if (hasTravelSegments) {
+      boundsPadding = TRAVEL_RADIUS;
+    }
+
+    const segmentBounds = computeSegmentsBounds(visibleSegments, boundsPadding);
     if (!segmentBounds.isEmpty()) {
       boundsRef.current = segmentBounds.clone();
       fitCameraToBox(viewer.camera, viewer.controls, segmentBounds);

@@ -35,7 +35,10 @@ export const collectSegments = (data: ParsedFile, maxLayer: number): ToolpathSeg
     .flatMap((layer) => layer.segments);
 };
 
-export const computeSegmentsBounds = (segments: ToolpathSegment[]): THREE.Box3 => {
+export const computeSegmentsBounds = (
+  segments: ToolpathSegment[],
+  padding = 0
+): THREE.Box3 => {
   const bounds = new THREE.Box3();
   if (segments.length === 0) {
     return bounds;
@@ -56,6 +59,10 @@ export const computeSegmentsBounds = (segments: ToolpathSegment[]): THREE.Box3 =
 
     bounds.expandByPoint(TEMP_BOUNDS_START);
     bounds.expandByPoint(TEMP_BOUNDS_END);
+  }
+
+  if (padding > 0) {
+    bounds.expandByScalar(padding);
   }
 
   return bounds;
