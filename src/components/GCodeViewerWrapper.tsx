@@ -21,6 +21,8 @@ import {
 } from './viewer/toolpathGeometry';
 import { disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
 import { useThreeViewer } from './viewer/useThreeViewer';
+import ViewerToolbar from './viewer/ViewerToolbar';
+import ParseErrorBanner from './viewer/ParseErrorBanner';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -239,6 +241,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     setShowTravelMoves(visible);
   }, []);
 
+  const toggleInfoPanel = useCallback(() => {
+    setInfoOpen((previous) => !previous);
+  }, [setInfoOpen]);
+
   const maxLayerDisplay = Math.max(maxLayer, 0);
   const infoFiles = useMemo(
     () =>
@@ -261,77 +267,23 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   return (
     <div className="flex flex-1 overflow-hidden">
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/60 px-4 py-3">
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-slate-300" htmlFor="layer-range">
-              {t('viewer.displayedLayer')}:{' '}
-              <span className="font-semibold text-white">{layerSlice}</span> /{' '}
-              <span>{maxLayerDisplay}</span>
-            </label>
-            <input
-              id="layer-range"
-              type="range"
-              min={0}
-              max={maxLayerDisplay}
-              value={Math.min(layerSlice, maxLayerDisplay)}
-              onChange={handleLayerChange}
-              className="h-2 w-48 cursor-pointer rounded-lg bg-slate-700 accent-brand-light disabled:cursor-not-allowed"
-              disabled={maxLayerDisplay === 0}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {onToggleSidebar && (
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                aria-expanded={isSidebarOpen ?? false}
-                className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800 lg:hidden"
-              >
-                {isSidebarOpen
-                  ? t('viewer.hideSidebar')
-                  : t('viewer.showSidebar')}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setInfoOpen((previous) => !previous)}
-              aria-expanded={isInfoOpen}
-              className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-            >
-              {isInfoOpen ? t('viewer.hideInfo') : t('viewer.showInfo')}
-            </button>
-            <button
-              type="button"
-              onClick={handleZoomToFit}
-              className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-            >
-              {t('viewer.zoomToFit')}
-            </button>
-            <button
-              type="button"
-              onClick={handleResetCamera}
-              className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-            >
-              {t('viewer.resetCamera')}
-            </button>
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
-            >
-              {isFullscreen ? t('viewer.exitFullscreen') : t('viewer.fullscreen')}
-            </button>
-          </div>
-        </div>
+        <ViewerToolbar
+          layerSlice={layerSlice}
+          maxLayer={maxLayerDisplay}
+          onLayerChange={handleLayerChange}
+          onToggleInfo={toggleInfoPanel}
+          isInfoOpen={isInfoOpen}
+          onZoomToFit={handleZoomToFit}
+          onResetCamera={handleResetCamera}
+          onToggleFullscreen={toggleFullscreen}
+          isFullscreen={isFullscreen}
+          onToggleSidebar={onToggleSidebar}
+          isSidebarOpen={isSidebarOpen}
+          t={t}
+        />
         <div ref={wrapperRef} className="relative flex flex-1 bg-slate-950">
           <div ref={mountRef} className="h-full w-full" />
-          {parseError && (
-            <div className="pointer-events-none absolute inset-0 flex items-end justify-start p-4">
-              <div className="pointer-events-auto max-w-md rounded-md border border-yellow-500/60 bg-slate-900/90 px-4 py-3 text-xs text-yellow-300">
-                {parseError}
-              </div>
-            </div>
-          )}
+          {parseError && <ParseErrorBanner message={parseError} />}
         </div>
       </div>
       <InfoPanel
