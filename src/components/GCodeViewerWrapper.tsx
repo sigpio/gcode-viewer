@@ -7,7 +7,7 @@ import {
   type ChangeEvent
 } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { GCodeFileRecord } from '../context/FileStore';
 import { parseGCode, type ParsedGCode, type ToolpathSegment } from '../utils/readGCode';
 import InfoPanel from './InfoPanel';
