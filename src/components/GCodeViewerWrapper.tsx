@@ -149,10 +149,13 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const viewerRef = useRef<ThreeContext | null>(null);
   const initialCameraRef = useRef<{ position: THREE.Vector3; target: THREE.Vector3 } | null>(null);
 
-  const [layerSlice, setLayerSlice] = useState<number>(0);
-  const [maxLayer, setMaxLayer] = useState<number>(0);
+  const [layerSelection, setLayerSelection] = useState<{ fileId: string | null; value: number }>(
+    () => ({
+      fileId: null,
+      value: 0
+    })
+  );
   const [isFullscreen, setFullscreen] = useState<boolean>(false);
-  const [parseError, setParseError] = useState<string | null>(null);
   const [isInfoOpen, setInfoOpen] = useState<boolean>(true);
   const [showTravelMoves, setShowTravelMoves] = useState<boolean>(true);
   const { t } = useTranslation();
@@ -182,25 +185,36 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     [file]
   );
 
-  useEffect(() => {
-    if (parsedResult.errorFile) {
-      setParseError(t('viewer.parseError', { file: parsedResult.errorFile }));
-    } else {
-      setParseError(null);
+  const parseError = useMemo(() => {
+    if (!parsedResult.errorFile) {
+      return null;
     }
+    return t('viewer.parseError', { file: parsedResult.errorFile });
   }, [parsedResult.errorFile, t]);
 
-  useEffect(() => {
+  const maxLayer = useMemo(() => {
     const data = parsedResult.data;
     if (!data) {
-      setLayerSlice(0);
-      setMaxLayer(0);
-      return;
+      return 0;
     }
-    const highestLayer = data.layers.length > 0 ? data.layers[data.layers.length - 1]!.index : 0;
-    setMaxLayer(highestLayer);
-    setLayerSlice(highestLayer);
+    return data.layers.length > 0 ? data.layers[data.layers.length - 1]!.index : 0;
   }, [parsedResult.data]);
+
+  const currentFileId = file?.id ?? null;
+  const layerSlice =
+    layerSelection.fileId === currentFileId
+      ? Math.max(0, Math.min(layerSelection.value, maxLayer))
+      : maxLayer;
+
+  const updateLayerSlice = useCallback(
+    (nextValue: number) => {
+      setLayerSelection({
+        fileId: currentFileId,
+        value: Math.max(0, Math.min(nextValue, maxLayer))
+      });
+    },
+    [currentFileId, maxLayer]
+  );
 
   useEffect(() => {
     const mountElement = mountRef.current;
@@ -391,12 +405,12 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     (event: ChangeEvent<HTMLInputElement>) => {
       const nextValue = Number.parseInt(event.target.value, 10);
       if (Number.isNaN(nextValue)) {
-        setLayerSlice(0);
+        updateLayerSlice(0);
         return;
       }
-      setLayerSlice(Math.max(0, Math.min(nextValue, maxLayer)));
+      updateLayerSlice(nextValue);
     },
-    [maxLayer]
+    [updateLayerSlice]
   );
 
   const handleZoomToFit = useCallback(() => {
