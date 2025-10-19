@@ -37,6 +37,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const { viewerRef, initialCameraRef } = useThreeViewer({ mountRef, wrapperRef });
   const boundsRef = useRef<THREE.Box3 | null>(null);
+  const shouldAutoFitRef = useRef<boolean>(true);
 
   const [layerSelection, setLayerSelection] = useState<{ fileId: string | null; value: number }>(
     () => ({
@@ -106,6 +107,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   );
 
   useEffect(() => {
+    shouldAutoFitRef.current = true;
+  }, [currentFileId]);
+
+  useEffect(() => {
     const handleFullscreenChange = () => {
       setFullscreen(document.fullscreenElement === wrapperRef.current);
     };
@@ -121,6 +126,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
       boundsRef.current = null;
       return;
     }
+
+    const { camera, controls } = viewer;
+    const previousCameraPosition = camera.position.clone();
+    const previousControlsTarget = controls.target.clone();
 
     disposeGroupChildren(viewer.group);
 
@@ -201,7 +210,15 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     const segmentBounds = computeSegmentsBounds(visibleSegments, boundsPadding);
     if (!segmentBounds.isEmpty()) {
       boundsRef.current = segmentBounds.clone();
-      fitCameraToBox(viewer.camera, viewer.controls, segmentBounds);
+      if (shouldAutoFitRef.current) {
+        fitCameraToBox(camera, controls, segmentBounds);
+        shouldAutoFitRef.current = false;
+      } else {
+        camera.position.copy(previousCameraPosition);
+        controls.target.copy(previousControlsTarget);
+        camera.updateProjectionMatrix();
+        controls.update();
+      }
     } else {
       boundsRef.current = null;
     }
@@ -210,6 +227,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const handleLayerChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const nextValue = Number.parseInt(event.target.value, 10);
+      shouldAutoFitRef.current = false;
       if (Number.isNaN(nextValue)) {
         updateLayerSlice(0);
         return;
@@ -226,6 +244,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
       return;
     }
     fitCameraToBox(viewer.camera, viewer.controls, bounds);
+    shouldAutoFitRef.current = false;
   }, [boundsRef, viewerRef]);
 
   const handleResetCamera = useCallback(() => {
@@ -252,6 +271,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   }, [wrapperRef]);
 
   const handleTravelMovesChange = useCallback((visible: boolean) => {
+    shouldAutoFitRef.current = false;
     setShowTravelMoves(visible);
   }, []);
 
