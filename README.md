@@ -42,7 +42,7 @@ npm install
 
 ## Deployment
 
-The project includes a GitHub Actions workflow (`.github/workflows/pages.yml`) that builds the Vite app and publishes the `dist/` output to GitHub Pages. With `base` configured to `/gcode-viewer/` in `vite.config.ts`, the site is ready to be served from `https://<username>.github.io/gcode-viewer/`. Deployments are triggered by pushing a tag that starts with `v` (for example `v1.2.0`) or by running the workflow manually. Each run also archives the generated `dist/` folder as a downloadable artifact, so you can retrieve the exact bundle for a given release.
+The project includes a GitHub Actions workflow (`.github/workflows/pages.yml`) that builds the Vite app and publishes the `dist/` output to GitHub Pages. With `base` configured to `/gcode-viewer/` in `vite.config.ts`, the site is ready to be served from `https://<username>.github.io/gcode-viewer/`. Deployments are triggered by pushing a tag that starts with `v` (for example `v1.2.0`) or by running the workflow manually. The workflow ensures that the tagged commit already lives on `main`; tags made on feature branches exit with a notice instead of publishing. Each successful run also archives the generated `dist/` folder as a downloadable artifact, so you can retrieve the exact bundle for a given release.
 
 ### Release checklist
 
