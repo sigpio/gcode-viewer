@@ -16,5 +16,8 @@ export default defineConfig({
       fs: fileURLToPath(new URL('./src/stubs/fs.ts', import.meta.url)),
       timers: fileURLToPath(new URL('./src/stubs/timers.ts', import.meta.url))
     }
+  },
+  build: {
+    chunkSizeWarningLimit: 1500
   }
 });
