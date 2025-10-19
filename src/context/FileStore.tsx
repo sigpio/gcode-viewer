@@ -202,6 +202,7 @@ export const FileStoreProvider = ({ children }: PropsWithChildren<unknown>) => {
   return <FileStoreContext.Provider value={value}>{children}</FileStoreContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components -- Custom hook is safe to export alongside provider
 export const useFileStore = (): FileStoreContextValue => {
   const context = useContext(FileStoreContext);
   if (!context) {

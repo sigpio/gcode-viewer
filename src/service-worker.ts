@@ -1,9 +1,9 @@
 /// <reference lib="WebWorker" />
 
-declare const self: ServiceWorkerGlobalScope;
-
 const CACHE_NAME = 'gcode-file-viewer-v1';
 const STATIC_ASSETS: string[] = ['/', '/index.html', '/manifest.json'];
+
+const sw = self as unknown as ServiceWorkerGlobalScope;
 
 const isRequestCacheable = (request: Request): boolean =>
   request.method === 'GET' && !request.url.includes('chrome-extension');
@@ -13,12 +13,12 @@ const precache = async () => {
   await cache.addAll(STATIC_ASSETS);
 };
 
-self.addEventListener('install', (event) => {
+sw.addEventListener('install', (event: ExtendableEvent) => {
   event.waitUntil(precache());
-  void self.skipWaiting();
+  void sw.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+sw.addEventListener('activate', (event: ExtendableEvent) => {
   event.waitUntil(
     (async () => {
       const cacheNames = await caches.keys();
@@ -27,12 +27,12 @@ self.addEventListener('activate', (event) => {
           .filter((cacheName) => cacheName !== CACHE_NAME)
           .map((cacheName) => caches.delete(cacheName))
       );
-      void self.clients.claim();
+      void sw.clients.claim();
     })()
   );
 });
 
-self.addEventListener('fetch', (event) => {
+sw.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
   if (!isRequestCacheable(request)) {
     return;

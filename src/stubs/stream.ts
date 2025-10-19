@@ -23,10 +23,12 @@ class EventEmitter {
 export class Transform extends EventEmitter {
   constructor(_options?: unknown) {
     super();
+    void _options;
   }
 
   push(_chunk: unknown): void {
     // No-op stub
+    void _chunk;
   }
 }
 
