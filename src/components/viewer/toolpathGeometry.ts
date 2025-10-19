@@ -15,6 +15,8 @@ const TEMP_MIDPOINT = new THREE.Vector3();
 const TEMP_QUATERNION = new THREE.Quaternion();
 const TEMP_SCALE = new THREE.Vector3();
 const TEMP_MATRIX = new THREE.Matrix4();
+const TEMP_BOUNDS_START = new THREE.Vector3();
+const TEMP_BOUNDS_END = new THREE.Vector3();
 
 export type SegmentMeshConfig = {
   readonly radius: number;
@@ -31,6 +33,32 @@ export const collectSegments = (data: ParsedFile, maxLayer: number): ToolpathSeg
   return data.layers
     .filter((layer) => layer.index <= maxLayer)
     .flatMap((layer) => layer.segments);
+};
+
+export const computeSegmentsBounds = (segments: ToolpathSegment[]): THREE.Box3 => {
+  const bounds = new THREE.Box3();
+  if (segments.length === 0) {
+    return bounds;
+  }
+
+  let initialized = false;
+  for (const segment of segments) {
+    TEMP_BOUNDS_START.fromArray(segment.start);
+    TEMP_BOUNDS_END.fromArray(segment.end);
+
+    if (!initialized) {
+      bounds.min.copy(TEMP_BOUNDS_START);
+      bounds.max.copy(TEMP_BOUNDS_START);
+      bounds.expandByPoint(TEMP_BOUNDS_END);
+      initialized = true;
+      continue;
+    }
+
+    bounds.expandByPoint(TEMP_BOUNDS_START);
+    bounds.expandByPoint(TEMP_BOUNDS_END);
+  }
+
+  return bounds;
 };
 
 export const createSegmentMesh = (

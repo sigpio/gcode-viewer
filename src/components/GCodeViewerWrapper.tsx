@@ -17,6 +17,7 @@ import {
   EXTRUSION_RADIUS,
   TRAVEL_RADIUS,
   collectSegments,
+  computeSegmentsBounds,
   createSegmentMesh
 } from './viewer/toolpathGeometry';
 import { disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
@@ -35,6 +36,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const mountRef = useRef<HTMLDivElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const { viewerRef, initialCameraRef } = useThreeViewer({ mountRef, wrapperRef });
+  const boundsRef = useRef<THREE.Box3 | null>(null);
 
   const [layerSelection, setLayerSelection] = useState<{ fileId: string | null; value: number }>(
     () => ({
@@ -116,6 +118,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   useEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer) {
+      boundsRef.current = null;
       return;
     }
 
@@ -123,12 +126,14 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
 
     const data = parsedResult.data;
     if (!data) {
+      boundsRef.current = null;
       return;
     }
 
     const targetLayer = Math.min(layerSlice, maxLayer);
     const segments = collectSegments(data, targetLayer);
     if (segments.length === 0) {
+      boundsRef.current = null;
       return;
     }
     const extrudingSegments = segments.filter((segment) => segment.extruding);
@@ -136,6 +141,13 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
       showTravelMoves && segments.some((segment) => !segment.extruding)
         ? segments.filter((segment) => !segment.extruding)
         : [];
+
+    const visibleSegments =
+      travelSegments.length > 0 ? [...extrudingSegments, ...travelSegments] : extrudingSegments;
+    if (visibleSegments.length === 0) {
+      boundsRef.current = null;
+      return;
+    }
 
     const meshes: THREE.Object3D[] = [];
 
@@ -171,13 +183,16 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     }
 
     if (meshes.length === 0) {
+      boundsRef.current = null;
       return;
     }
 
-    const bounds = new THREE.Box3();
-    meshes.forEach((mesh) => bounds.expandByObject(mesh));
-    if (!bounds.isEmpty()) {
-      fitCameraToBox(viewer.camera, viewer.controls, bounds);
+    const segmentBounds = computeSegmentsBounds(visibleSegments);
+    if (!segmentBounds.isEmpty()) {
+      boundsRef.current = segmentBounds.clone();
+      fitCameraToBox(viewer.camera, viewer.controls, segmentBounds);
+    } else {
+      boundsRef.current = null;
     }
   }, [parsedResult.data, layerSlice, maxLayer, showTravelMoves, viewerRef]);
 
@@ -195,24 +210,12 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
 
   const handleZoomToFit = useCallback(() => {
     const viewer = viewerRef.current;
-    if (!viewer) {
+    const bounds = boundsRef.current;
+    if (!viewer || !bounds || bounds.isEmpty()) {
       return;
     }
-    const bounds = new THREE.Box3();
-    let hasBounds = false;
-    viewer.group.children.forEach((child) => {
-      const objectBounds = new THREE.Box3().setFromObject(child);
-      if (!hasBounds) {
-        bounds.copy(objectBounds);
-        hasBounds = true;
-      } else {
-        bounds.union(objectBounds);
-      }
-    });
-    if (hasBounds) {
-      fitCameraToBox(viewer.camera, viewer.controls, bounds);
-    }
-  }, [viewerRef]);
+    fitCameraToBox(viewer.camera, viewer.controls, bounds);
+  }, [boundsRef, viewerRef]);
 
   const handleResetCamera = useCallback(() => {
     const viewer = viewerRef.current;
