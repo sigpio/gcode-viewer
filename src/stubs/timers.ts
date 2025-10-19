@@ -5,6 +5,8 @@ const globalTimer =
     ? globalThis
     : {
         setTimeout: (_handler: TimerHandler, _delay?: number) => {
+          void _handler;
+          void _delay;
           throw new Error('Timers non disponibili in questo contesto.');
         }
       };

@@ -13,6 +13,8 @@ type InfoPanelProps = {
   readonly currentLayer: number;
   readonly maxLayer: number;
   readonly onClose?: () => void;
+  readonly showTravelMoves: boolean;
+  readonly onTravelMovesChange: (visible: boolean) => void;
 };
 
 const CORE_METADATA_KEYS = [
@@ -55,7 +57,14 @@ const formatBounds = (bounds: Bounds3D | null): string | null => {
   )} | Z ${minZ.toFixed(2)} -> ${maxZ.toFixed(2)}`;
 };
 
-const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) => {
+const InfoPanel = ({
+  files,
+  isOpen,
+  currentLayer,
+  maxLayer,
+  showTravelMoves,
+  onTravelMovesChange
+}: InfoPanelProps) => {
   const { t } = useTranslation();
 
   const payload = useMemo(() => {
@@ -97,6 +106,15 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
         <p className="text-xs text-slate-400">
           {t('infoPanel.currentLayer', { current: currentLayer, max: maxLayer })}
         </p>
+        <label className="mt-3 flex items-center gap-2 text-xs text-slate-300">
+          <input
+            type="checkbox"
+            className="h-4 w-4 cursor-pointer rounded border-slate-600 bg-slate-900 text-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light"
+            checked={showTravelMoves}
+            onChange={(event) => onTravelMovesChange(event.target.checked)}
+          />
+          <span>{t('infoPanel.showTravelMoves')}</span>
+        </label>
       </header>
       <div className="scrollbar-brand flex-1 overflow-y-auto px-4 py-4">
         {payload.length === 0 ? (
@@ -106,7 +124,7 @@ const InfoPanel = ({ files, isOpen, currentLayer, maxLayer }: InfoPanelProps) =>
             {payload.map((file) => (
               <section
                 key={file.name}
-                className="scrollbar-brand flex max-h-[80vh] flex-col overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/70 p-4"
+                className="scrollbar-brand flex max-h-[74vh] flex-col overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/70 p-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-white">{file.name}</p>

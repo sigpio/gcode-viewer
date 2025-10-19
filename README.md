@@ -40,6 +40,17 @@ npm install
 - Detailed metadata panel powered by `react-i18next`, translated in English and Italian
 - PWA-ready setup with manifest, icons, and service worker
 
+## Deployment
+
+The project includes a GitHub Actions workflow (`.github/workflows/pages.yml`) that builds the Vite app and publishes the `dist/` output to GitHub Pages. With `base` configured to `/gcode-viewer/` in `vite.config.ts`, the site is ready to be served from `https://<username>.github.io/gcode-viewer/`. Deployments are triggered by pushing a tag that starts with `v` (for example `v1.2.0`) or by running the workflow manually. The workflow ensures that the tagged commit already lives on `main`; tags made on feature branches exit with a notice instead of publishing. Each successful run also archives the generated `dist/` folder as a downloadable artifact, so you can retrieve the exact bundle for a given release.
+
+### Release checklist
+
+1. Run quality checks locally (e.g. `npm run lint` and any extra tests).
+2. Update the version: `npm version <patch|minor|major>` – this creates the commit and Git tag.
+3. Push the commit and tag: `git push origin HEAD --tags`.
+4. Wait for the `Deploy to GitHub Pages` workflow to finish; the deployed site will point to the tagged commit.
+
 ## Notes on `gcode-parser`
 
 Parsing is handled by `gcode-parser`. If you rely on custom commands, extend `src/utils/readGCode.ts` to interpret them and feed the 3D renderer accordingly.
