@@ -34,6 +34,80 @@ type ParsedFile = ParsedGCode & {
 };
 
 const DEFAULT_TOOLPATH_COLOR = '#3b82f6';
+const EXTRUSION_RADIUS = 0.4;
+const TRAVEL_RADIUS = EXTRUSION_RADIUS * 0.4;
+const SEGMENT_RADIAL_SEGMENTS = 10;
+
+const UP_AXIS = new THREE.Vector3(0, 1, 0);
+const TEMP_START = new THREE.Vector3();
+const TEMP_END = new THREE.Vector3();
+const TEMP_DIRECTION = new THREE.Vector3();
+const TEMP_MIDPOINT = new THREE.Vector3();
+const TEMP_QUATERNION = new THREE.Quaternion();
+const TEMP_SCALE = new THREE.Vector3();
+const TEMP_MATRIX = new THREE.Matrix4();
+
+type SegmentMeshConfig = {
+  radius: number;
+  color: THREE.ColorRepresentation;
+  opacity?: number;
+  metalness?: number;
+  roughness?: number;
+};
+
+const createSegmentMesh = (
+  segments: ToolpathSegment[],
+  config: SegmentMeshConfig
+): THREE.InstancedMesh<THREE.CylinderGeometry, THREE.MeshStandardMaterial> | null => {
+  if (segments.length === 0) {
+    return null;
+  }
+
+  const geometry = new THREE.CylinderGeometry(
+    config.radius,
+    config.radius,
+    1,
+    SEGMENT_RADIAL_SEGMENTS,
+    1,
+    false
+  );
+  geometry.computeVertexNormals();
+
+  const material = new THREE.MeshStandardMaterial({
+    color: config.color,
+    metalness: config.metalness ?? 0.15,
+    roughness: config.roughness ?? 0.55,
+    opacity: config.opacity ?? 1,
+    transparent: (config.opacity ?? 1) < 1
+  });
+  material.side = THREE.DoubleSide;
+
+  const mesh = new THREE.InstancedMesh(geometry, material, segments.length);
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+
+  for (let index = 0; index < segments.length; index += 1) {
+    const segment = segments[index];
+    TEMP_START.fromArray(segment.start);
+    TEMP_END.fromArray(segment.end);
+    TEMP_DIRECTION.subVectors(TEMP_END, TEMP_START);
+    const length = TEMP_DIRECTION.length();
+    if (length <= Number.EPSILON) {
+      TEMP_MATRIX.identity();
+      mesh.setMatrixAt(index, TEMP_MATRIX);
+      continue;
+    }
+    TEMP_DIRECTION.normalize();
+    TEMP_QUATERNION.setFromUnitVectors(UP_AXIS, TEMP_DIRECTION);
+    TEMP_MIDPOINT.addVectors(TEMP_START, TEMP_END).multiplyScalar(0.5);
+    TEMP_SCALE.set(1, length, 1);
+    TEMP_MATRIX.compose(TEMP_MIDPOINT, TEMP_QUATERNION, TEMP_SCALE);
+    mesh.setMatrixAt(index, TEMP_MATRIX);
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  return mesh;
+};
 
 const collectSegments = (data: ParsedFile, maxLayer: number): ToolpathSegment[] => {
   if (data.layers.length === 0) {
@@ -42,28 +116,6 @@ const collectSegments = (data: ParsedFile, maxLayer: number): ToolpathSegment[] 
   return data.layers
     .filter((layer) => layer.index <= maxLayer)
     .flatMap((layer) => layer.segments);
-};
-
-const buildGeometry = (segments: ToolpathSegment[], colorHex: string) => {
-  const positions: number[] = [];
-  const colors: number[] = [];
-
-  const color = new THREE.Color(colorHex);
-  const travelColor = color.clone().lerp(new THREE.Color('#94a3b8'), 0.75);
-
-  for (const segment of segments) {
-    const tint = segment.extruding ? color : travelColor;
-    positions.push(...segment.start, ...segment.end);
-    colors.push(tint.r, tint.g, tint.b, tint.r, tint.g, tint.b);
-  }
-
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(new Float32Array(positions), 3)
-  );
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(colors), 3));
-  return geometry;
 };
 
 const fitCameraToBox = (
@@ -89,6 +141,15 @@ const disposeGroupChildren = (group: THREE.Group) => {
   while (group.children.length > 0) {
     const child = group.children[0]!;
     group.remove(child);
+    if (child instanceof THREE.InstancedMesh) {
+      child.geometry.dispose();
+      if (Array.isArray(child.material)) {
+        child.material.forEach((material) => material.dispose());
+      } else {
+        child.material.dispose();
+      }
+      continue;
+    }
     if (child instanceof THREE.LineSegments) {
       child.geometry.dispose();
       if (Array.isArray(child.material)) {
@@ -381,21 +442,51 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (segments.length === 0) {
       return;
     }
-    const renderSegments = showTravelMoves ? segments : segments.filter((segment) => segment.extruding);
-    if (renderSegments.length === 0) {
+    const extrudingSegments = segments.filter((segment) => segment.extruding);
+    const travelSegments =
+      showTravelMoves && segments.some((segment) => !segment.extruding)
+        ? segments.filter((segment) => !segment.extruding)
+        : [];
+
+    const meshes: THREE.Object3D[] = [];
+
+    const extrusionMesh = createSegmentMesh(extrudingSegments, {
+      radius: EXTRUSION_RADIUS,
+      color: DEFAULT_TOOLPATH_COLOR,
+      metalness: 0.25,
+      roughness: 0.35
+    });
+    if (extrusionMesh) {
+      extrusionMesh.name = `${data.meta.id}-extrusion`;
+      viewer.group.add(extrusionMesh);
+      meshes.push(extrusionMesh);
+    }
+
+    if (travelSegments.length > 0) {
+      const travelColor = new THREE.Color(DEFAULT_TOOLPATH_COLOR).lerp(
+        new THREE.Color('#94a3b8'),
+        0.7
+      );
+      const travelMesh = createSegmentMesh(travelSegments, {
+        radius: TRAVEL_RADIUS,
+        color: travelColor,
+        opacity: 0.4,
+        metalness: 0.1,
+        roughness: 0.75
+      });
+      if (travelMesh) {
+        travelMesh.name = `${data.meta.id}-travel`;
+        viewer.group.add(travelMesh);
+        meshes.push(travelMesh);
+      }
+    }
+
+    if (meshes.length === 0) {
       return;
     }
-    const geometry = buildGeometry(renderSegments, DEFAULT_TOOLPATH_COLOR);
-    const material = new THREE.LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.95
-    });
-    const lines = new THREE.LineSegments(geometry, material);
-    lines.name = data.meta.id;
-    viewer.group.add(lines);
 
-    const bounds = new THREE.Box3().setFromObject(lines);
+    const bounds = new THREE.Box3();
+    meshes.forEach((mesh) => bounds.expandByObject(mesh));
     if (!bounds.isEmpty()) {
       fitCameraToBox(viewer.camera, viewer.controls, bounds);
     }
