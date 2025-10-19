@@ -99,6 +99,7 @@ export const createSegmentMesh = (
   mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   mesh.castShadow = false;
   mesh.receiveShadow = false;
+  mesh.frustumCulled = false;
 
   for (let index = 0; index < segments.length; index += 1) {
     const segment = segments[index];
