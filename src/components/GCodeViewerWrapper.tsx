@@ -37,6 +37,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const { viewerRef, initialCameraRef } = useThreeViewer({ mountRef, wrapperRef });
   const boundsRef = useRef<THREE.Box3 | null>(null);
+  const shouldAutoFitRef = useRef<boolean>(true);
 
   const [layerSelection, setLayerSelection] = useState<{ fileId: string | null; value: number }>(
     () => ({
@@ -104,6 +105,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     },
     [currentFileId, maxLayer]
   );
+
+  useEffect(() => {
+    shouldAutoFitRef.current = true;
+  }, [currentFileId]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -201,7 +206,10 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     const segmentBounds = computeSegmentsBounds(visibleSegments, boundsPadding);
     if (!segmentBounds.isEmpty()) {
       boundsRef.current = segmentBounds.clone();
-      fitCameraToBox(viewer.camera, viewer.controls, segmentBounds);
+      if (shouldAutoFitRef.current) {
+        fitCameraToBox(viewer.camera, viewer.controls, segmentBounds);
+        shouldAutoFitRef.current = false;
+      }
     } else {
       boundsRef.current = null;
     }
@@ -226,6 +234,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
       return;
     }
     fitCameraToBox(viewer.camera, viewer.controls, bounds);
+    shouldAutoFitRef.current = false;
   }, [boundsRef, viewerRef]);
 
   const handleResetCamera = useCallback(() => {
