@@ -7,7 +7,6 @@ import {
   type ChangeEvent
 } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { GCodeFileRecord } from '../context/FileStore';
 import { parseGCode } from '../utils/readGCode';
 import InfoPanel from './InfoPanel';
@@ -20,7 +19,8 @@ import {
   collectSegments,
   createSegmentMesh
 } from './viewer/toolpathGeometry';
-import { createAxisLabel, disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
+import { disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
+import { useThreeViewer } from './viewer/useThreeViewer';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -28,22 +28,11 @@ type ViewerProps = {
   readonly isSidebarOpen?: boolean;
 };
 
-type ThreeContext = {
-  renderer: THREE.WebGLRenderer;
-  camera: THREE.PerspectiveCamera;
-  scene: THREE.Scene;
-  controls: OrbitControls;
-  group: THREE.Group;
-  axisLabels: THREE.Group;
-  animationId: number | null;
-};
-
 
 const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProps) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const viewerRef = useRef<ThreeContext | null>(null);
-  const initialCameraRef = useRef<{ position: THREE.Vector3; target: THREE.Vector3 } | null>(null);
+  const { viewerRef, initialCameraRef } = useThreeViewer({ mountRef, wrapperRef });
 
   const [layerSelection, setLayerSelection] = useState<{ fileId: string | null; value: number }>(
     () => ({
@@ -113,143 +102,6 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   );
 
   useEffect(() => {
-    const mountElement = mountRef.current;
-    if (!mountElement || viewerRef.current) {
-      return;
-    }
-
-    const width = mountElement.clientWidth || 800;
-    const height = mountElement.clientHeight || 600;
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(width, height);
-    renderer.setClearColor('#020617');
-    mountElement.appendChild(renderer.domElement);
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#020617');
-
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
-    camera.up.set(0, 0, 1);
-    camera.position.set(200, 200, 220);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.screenSpacePanning = false;
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.08;
-    controls.rotateSpeed = 0.6;
-    controls.zoomSpeed = 1.2;
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.75);
-    directionalLight.position.set(200, 400, 300);
-    scene.add(ambientLight);
-    scene.add(directionalLight);
-
-    const grid = new THREE.GridHelper(400, 40, 0x1d4ed8, 0x1f2937);
-    const gridMaterial = grid.material as THREE.Material;
-    gridMaterial.transparent = true;
-    gridMaterial.opacity = 0.18;
-    grid.rotation.x = Math.PI / 2;
-    scene.add(grid);
-
-    const axes = new THREE.AxesHelper(80);
-    scene.add(axes);
-
-    const axisLabels = new THREE.Group();
-    const labelDistance = 90;
-    axisLabels.add(
-      createAxisLabel('X', '#f97316', new THREE.Vector3(labelDistance, 0, 0))
-    );
-    axisLabels.add(
-      createAxisLabel('Y', '#22c55e', new THREE.Vector3(0, labelDistance, 0))
-    );
-    axisLabels.add(
-      createAxisLabel('Z', '#38bdf8', new THREE.Vector3(0, 0, labelDistance))
-    );
-    scene.add(axisLabels);
-
-    const group = new THREE.Group();
-    scene.add(group);
-
-    const context: ThreeContext = {
-      renderer,
-      camera,
-      scene,
-      controls,
-      group,
-      axisLabels,
-      animationId: null
-    };
-    viewerRef.current = context;
-    initialCameraRef.current = {
-      position: camera.position.clone(),
-      target: controls.target.clone()
-    };
-
-    const renderLoop = () => {
-      context.animationId = window.requestAnimationFrame(renderLoop);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    renderLoop();
-
-    const handleResize = () => {
-      const container = wrapperRef.current;
-      if (!container) {
-        return;
-      }
-      const nextWidth = container.clientWidth || width;
-      const nextHeight = container.clientHeight || height;
-      renderer.setSize(nextWidth, nextHeight);
-      camera.aspect = nextWidth / nextHeight;
-      camera.updateProjectionMatrix();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (context.animationId !== null) {
-        window.cancelAnimationFrame(context.animationId);
-      }
-      controls.dispose();
-      disposeGroupChildren(axisLabels);
-      disposeGroupChildren(group);
-      renderer.dispose();
-      scene.clear();
-      if (mountElement.contains(renderer.domElement)) {
-        mountElement.removeChild(renderer.domElement);
-      }
-      viewerRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!wrapperRef.current) {
-      return;
-    }
-    const element = wrapperRef.current;
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-    const observer = new ResizeObserver(() => {
-      const viewer = viewerRef.current;
-      if (!viewer) {
-        return;
-      }
-      const width = element.clientWidth || 1;
-      const height = element.clientHeight || 1;
-      viewer.renderer.setSize(width, height);
-      viewer.camera.aspect = width / height;
-      viewer.camera.updateProjectionMatrix();
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
     const handleFullscreenChange = () => {
       setFullscreen(document.fullscreenElement === wrapperRef.current);
     };
@@ -257,7 +109,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, []);
+  }, [wrapperRef]);
 
   useEffect(() => {
     const viewer = viewerRef.current;
@@ -325,7 +177,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (!bounds.isEmpty()) {
       fitCameraToBox(viewer.camera, viewer.controls, bounds);
     }
-  }, [parsedResult.data, layerSlice, maxLayer, showTravelMoves]);
+  }, [parsedResult.data, layerSlice, maxLayer, showTravelMoves, viewerRef]);
 
   const handleLayerChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -358,7 +210,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (hasBounds) {
       fitCameraToBox(viewer.camera, viewer.controls, bounds);
     }
-  }, []);
+  }, [viewerRef]);
 
   const handleResetCamera = useCallback(() => {
     const viewer = viewerRef.current;
@@ -370,7 +222,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     viewer.controls.target.copy(initial.target);
     viewer.camera.updateProjectionMatrix();
     viewer.controls.update();
-  }, []);
+  }, [initialCameraRef, viewerRef]);
 
   const toggleFullscreen = useCallback(() => {
     if (!wrapperRef.current) {
@@ -381,7 +233,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     } else {
       void wrapperRef.current.requestFullscreen();
     }
-  }, []);
+  }, [wrapperRef]);
 
   const handleTravelMovesChange = useCallback((visible: boolean) => {
     setShowTravelMoves(visible);
