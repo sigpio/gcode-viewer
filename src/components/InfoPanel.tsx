@@ -124,7 +124,7 @@ const InfoPanel = ({
             {payload.map((file) => (
               <section
                 key={file.name}
-                className="scrollbar-brand flex max-h-[80vh] flex-col overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/70 p-4"
+                className="scrollbar-brand flex max-h-[74vh] flex-col overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/70 p-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-white">{file.name}</p>
