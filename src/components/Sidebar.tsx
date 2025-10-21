@@ -18,7 +18,9 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
   return (
     <aside
       id={id}
-      className={`z-20 ${isOpen ? 'flex' : 'hidden'} w-80 flex-shrink-0 flex-col border-r border-slate-800 bg-slate-900 transition-transform duration-300 lg:flex lg:relative lg:translate-x-0`}
+      className={`fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-b border-slate-800 bg-slate-950 transition-transform duration-300 ${
+        isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : '-translate-x-full opacity-0 pointer-events-none'
+      } lg:static lg:h-auto lg:w-80 lg:flex-shrink-0 lg:translate-x-0 lg:border-b-0 lg:border-r lg:border-slate-800 lg:bg-slate-900 lg:opacity-100 lg:pointer-events-auto`}
     >
       <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">

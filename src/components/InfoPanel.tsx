@@ -62,6 +62,7 @@ const InfoPanel = ({
   isOpen,
   currentLayer,
   maxLayer,
+  onClose,
   showTravelMoves,
   onTravelMovesChange
 }: InfoPanelProps) => {
@@ -99,14 +100,27 @@ const InfoPanel = ({
   return (
     <aside
       aria-label={t('infoPanel.title')}
-      className="relative flex h-full w-80 flex-shrink-0 flex-col overflow-hidden border-l border-slate-800 bg-slate-900/80 text-slate-200 backdrop-blur transition-all duration-300"
+      className="fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-t border-slate-800 bg-slate-950 text-slate-200 transition-transform duration-300 lg:static lg:h-full lg:w-80 lg:flex-shrink-0 lg:border-t-0 lg:border-l lg:border-slate-800 lg:bg-slate-900/80"
     >
-      <header className="border-b border-slate-800 px-4 py-3">
-        <p className="text-sm font-semibold text-white">{t('infoPanel.title')}</p>
-        <p className="text-xs text-slate-400">
-          {t('infoPanel.currentLayer', { current: currentLayer, max: maxLayer })}
-        </p>
-        <label className="mt-3 flex items-center gap-2 text-xs text-slate-300">
+      <header className="flex flex-col gap-3 border-b border-slate-800 px-4 py-3">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-sm font-semibold text-white">{t('infoPanel.title')}</p>
+            <p className="text-xs text-slate-400">
+              {t('infoPanel.currentLayer', { current: currentLayer, max: maxLayer })}
+            </p>
+          </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white lg:hidden"
+            >
+              {t('infoPanel.close')}
+            </button>
+          )}
+        </div>
+        <label className="flex items-center gap-2 text-xs text-slate-300">
           <input
             type="checkbox"
             className="h-4 w-4 cursor-pointer rounded border-slate-600 bg-slate-900 text-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light"

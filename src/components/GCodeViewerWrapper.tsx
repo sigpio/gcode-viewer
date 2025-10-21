@@ -31,6 +31,12 @@ type ViewerProps = {
   readonly isSidebarOpen?: boolean;
 };
 
+const getInitialPanelState = () => {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+  return window.matchMedia('(min-width: 768px)').matches;
+};
 
 const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProps) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -46,7 +52,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     })
   );
   const [isFullscreen, setFullscreen] = useState<boolean>(false);
-  const [isInfoOpen, setInfoOpen] = useState<boolean>(true);
+  const [isInfoOpen, setInfoOpen] = useState<boolean>(() => getInitialPanelState());
   const [showTravelMoves, setShowTravelMoves] = useState<boolean>(true);
   const { t } = useTranslation();
 
@@ -109,6 +115,31 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
   useEffect(() => {
     shouldAutoFitRef.current = true;
   }, [currentFileId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setInfoOpen(true);
+      }
+    };
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+    }
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -327,6 +358,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
         maxLayer={maxLayerDisplay}
         showTravelMoves={showTravelMoves}
         onTravelMovesChange={handleTravelMovesChange}
+        onClose={toggleInfoPanel}
       />
     </div>
   );
