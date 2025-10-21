@@ -1,12 +1,24 @@
 /// <reference lib="WebWorker" />
 
 const CACHE_NAME = 'gcode-file-viewer-v1';
-const STATIC_ASSETS: string[] = ['/', '/index.html', '/manifest.json'];
+const ORIGIN = self.location.origin;
+const BASE_URL = import.meta.env.BASE_URL;
+
+const resolveAssetUrl = (path: string): string =>
+  new URL(path, `${ORIGIN}${BASE_URL}`).toString();
+
+const STATIC_ASSETS: string[] = [
+  new URL(BASE_URL, ORIGIN).toString(),
+  resolveAssetUrl('index.html'),
+  resolveAssetUrl('manifest.json')
+];
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 const isRequestCacheable = (request: Request): boolean =>
-  request.method === 'GET' && !request.url.includes('chrome-extension');
+  request.method === 'GET' &&
+  request.url.startsWith(ORIGIN) &&
+  !request.url.includes('chrome-extension');
 
 const precache = async () => {
   const cache = await caches.open(CACHE_NAME);
