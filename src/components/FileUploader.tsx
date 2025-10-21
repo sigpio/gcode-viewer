@@ -75,7 +75,7 @@ const FileUploader = () => {
   }, []);
 
   return (
-    <div className="flex w-full max-w-sm items-center justify-end">
+    <div className="flex w-full items-center justify-start md:max-w-sm md:justify-end">
       <div
         className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm transition-colors ${
           isDragging

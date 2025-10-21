@@ -6,9 +6,16 @@ import Sidebar from './components/Sidebar';
 import GCodeViewerWrapper from './components/GCodeViewerWrapper';
 import LanguageSelector from './components/LanguageSelector';
 
+const getInitialPanelState = () => {
+  if (typeof window === 'undefined') {
+    return true;
+  }
+  return window.matchMedia('(min-width: 768px)').matches;
+};
+
 const AppLayout = () => {
   const { files, activeFile, setActiveFile } = useFileStore();
-  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [isSidebarOpen, setSidebarOpen] = useState<boolean>(() => getInitialPanelState());
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -17,16 +24,41 @@ const AppLayout = () => {
     }
   }, [files, activeFile, setActiveFile]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      if (event.matches) {
+        setSidebarOpen(true);
+      }
+    };
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleChange);
+    }
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
+
   return (
     <div className="flex h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="flex items-center justify-between border-b border-slate-800 bg-slate-900 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-white">{t('header.title')}</h1>
-        </div>
-        <div className="flex items-center gap-3 text-sm text-slate-500">
-          <FileUploader />
-          <span className="select-none text-slate-700">|</span>
+      <header className="flex flex-wrap items-start gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3">
+        <h1 className="order-1 text-lg font-semibold text-white">{t('header.title')}</h1>
+        <div className="order-2 ml-auto flex items-center md:order-3">
+          <span className="hidden select-none text-slate-700 md:mr-3 md:inline">|</span>
           <LanguageSelector />
+        </div>
+        <div className="order-3 w-full md:order-2 md:w-auto">
+          <FileUploader />
         </div>
       </header>
 
