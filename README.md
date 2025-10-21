@@ -42,15 +42,14 @@ npm install
 
 ## Deployment
 
-The project includes a GitHub Actions workflow (`.github/workflows/pages.yml`) that builds the Vite app and publishes the `dist/` output to GitHub Pages. With `base` configured to `/gcode-viewer/` in `vite.config.ts`, the site is publicly available at https://sigpio.github.io/gcode-viewer/. Deployments are triggered by pushing a tag that starts with `v` (for example `v1.2.0`) or by running the workflow manually. The workflow ensures that the tagged commit already lives on `main`; tags made on feature branches exit with a notice instead of publishing. Each successful run also archives the generated `dist/` folder as a downloadable artifact, so you can retrieve the exact bundle for a given release. If the `github-pages` environment has reviewers configured, remember to approve the deploy from the Actions UI once the workflow reaches the deployment step.
+The project includes a GitHub Actions workflow (`.github/workflows/pages.yml`) that builds the Vite app and publishes the `dist/` output to GitHub Pages. With `base` configured to `/gcode-viewer/` in `vite.config.ts`, the site is publicly available at https://sigpio.github.io/gcode-viewer/. The workflow runs automatically whenever commits land on `main`, and you can also trigger it manually from the Actions tab. Each successful run archives the generated `dist/` folder as a downloadable artifact, so you can retrieve the exact bundle for a given revision. If the `github-pages` environment has reviewers configured, remember to approve the deploy from the Actions UI once the workflow reaches the deployment step.
 
 ### Release checklist
 
 1. Merge the desired changes into `main` through a reviewed pull request (feature → develop → main, following the repository rulesets and CODEOWNERS checks).
-2. Run local quality checks (e.g. `npm run lint` and any extra tests).
-3. From `main`, bump the version: `npm version <patch|minor|major>` - this creates the version commit and Git tag.
-4. Push commit and tag: `git push origin main --tags`.
-5. Monitor the `Deploy to GitHub Pages` workflow; approve the deployment if required and confirm the published site updates.
+2. Run local quality checks (e.g. `npm run lint` and any extra tests) before merging.
+3. Update the `package.json` version if needed (edit manually or run `npm pkg set version=<semver>`).
+4. Monitor the `Deploy to GitHub Pages` workflow triggered by the push to `main`; approve the deployment if required and confirm the published site updates.
 
 ## Notes on `gcode-parser`
 
