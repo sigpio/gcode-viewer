@@ -48,7 +48,8 @@ const resources = {
         estimatedHeight: 'Estimated height',
         boundingBox: 'Bounding box',
         additionalFields: 'Other fields',
-        showTravelMoves: 'Show extrusion travel'
+        showTravelMoves: 'Show extrusion travel',
+        close: 'Close'
       },
       language: {
         label: 'Language',
@@ -103,7 +104,8 @@ const resources = {
         estimatedHeight: 'Altezza stimata',
         boundingBox: 'Bounding box',
         additionalFields: 'Altri campi',
-        showTravelMoves: 'Mostra movimenti estrusore'
+        showTravelMoves: 'Mostra movimenti estrusore',
+        close: 'Chiudi'
       },
       language: {
         label: 'Lingua',
