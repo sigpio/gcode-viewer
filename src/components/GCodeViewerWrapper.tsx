@@ -35,7 +35,7 @@ const getInitialPanelState = () => {
   if (typeof window === 'undefined') {
     return true;
   }
-  return window.matchMedia('(min-width: 768px)').matches;
+  return window.matchMedia('(min-width: 1024px)').matches;
 };
 
 const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProps) => {
@@ -120,24 +120,15 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     if (typeof window === 'undefined') {
       return;
     }
-    const mediaQuery = window.matchMedia('(min-width: 768px)');
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
     const handleChange = (event: MediaQueryListEvent) => {
-      if (event.matches) {
-        setInfoOpen(true);
-      }
+      // Open info panel on desktop (>= 1024px), close on mobile/tablet (< 1024px)
+      setInfoOpen(event.matches);
     };
 
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', handleChange);
-    } else if (typeof mediaQuery.addListener === 'function') {
-      mediaQuery.addListener(handleChange);
-    }
+    mediaQuery.addEventListener('change', handleChange);
     return () => {
-      if (typeof mediaQuery.removeEventListener === 'function') {
-        mediaQuery.removeEventListener('change', handleChange);
-      } else if (typeof mediaQuery.removeListener === 'function') {
-        mediaQuery.removeListener(handleChange);
-      }
+      mediaQuery.removeEventListener('change', handleChange);
     };
   }, []);
 
