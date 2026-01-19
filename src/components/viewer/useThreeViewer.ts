@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createAxisLabel, disposeGroupChildren } from './sceneUtils';
 import type { InitialCameraState, ThreeContext } from './types';
+import { SCENE_BACKGROUND_COLOR, GRID_PRIMARY_COLOR, GRID_SECONDARY_COLOR, AXIS_X_COLOR, AXIS_Y_COLOR, AXIS_Z_COLOR } from '../../theme/colors';
 
 type UseThreeViewerParams = {
   mountRef: React.MutableRefObject<HTMLDivElement | null>;
@@ -32,11 +33,11 @@ export const useThreeViewer = ({
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
-    renderer.setClearColor('#020617');
+    renderer.setClearColor(SCENE_BACKGROUND_COLOR);
     mountElement.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#020617');
+    scene.background = new THREE.Color(SCENE_BACKGROUND_COLOR);
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
     camera.up.set(0, 0, 1);
@@ -55,7 +56,7 @@ export const useThreeViewer = ({
     scene.add(ambientLight);
     scene.add(directionalLight);
 
-    const grid = new THREE.GridHelper(400, 40, 0x1d4ed8, 0x1f2937);
+    const grid = new THREE.GridHelper(400, 40, GRID_PRIMARY_COLOR, GRID_SECONDARY_COLOR);
     const gridMaterial = grid.material as THREE.Material;
     gridMaterial.transparent = true;
     gridMaterial.opacity = 0.18;
@@ -67,9 +68,9 @@ export const useThreeViewer = ({
 
     const axisLabels = new THREE.Group();
     const labelDistance = 90;
-    axisLabels.add(createAxisLabel('X', '#f97316', new THREE.Vector3(labelDistance, 0, 0)));
-    axisLabels.add(createAxisLabel('Y', '#22c55e', new THREE.Vector3(0, labelDistance, 0)));
-    axisLabels.add(createAxisLabel('Z', '#38bdf8', new THREE.Vector3(0, 0, labelDistance)));
+    axisLabels.add(createAxisLabel('X', AXIS_X_COLOR, new THREE.Vector3(labelDistance, 0, 0)));
+    axisLabels.add(createAxisLabel('Y', AXIS_Y_COLOR, new THREE.Vector3(0, labelDistance, 0)));
+    axisLabels.add(createAxisLabel('Z', AXIS_Z_COLOR, new THREE.Vector3(0, 0, labelDistance)));
     scene.add(axisLabels);
 
     const group = new THREE.Group();

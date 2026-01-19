@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import type { ToolpathSegment } from '../../utils/readGCode';
 import type { ParsedFile } from './types';
+import { TOOLPATH_EXTRUSION_COLOR } from '../../theme/colors';
 
-export const DEFAULT_TOOLPATH_COLOR = '#3b82f6';
+export const DEFAULT_TOOLPATH_COLOR = TOOLPATH_EXTRUSION_COLOR;
 export const EXTRUSION_RADIUS = 0.4;
 export const TRAVEL_RADIUS = EXTRUSION_RADIUS * 0.4;
 export const SEGMENT_RADIAL_SEGMENTS = 10;
