@@ -11,7 +11,7 @@ const readFileAsText = (file: File): Promise<string> =>
   });
 
 /**
- * FileUploader gestisce l'input tradizionale e drag & drop per file G-code.
+ * FileUploader handles both traditional input and drag‑and‑drop for G‑code files.
  */
 const FileUploader = () => {
   const { addFile } = useFileStore();
