@@ -5,6 +5,7 @@ import FileUploader from './components/FileUploader';
 import Sidebar from './components/Sidebar';
 import GCodeViewerWrapper from './components/GCodeViewerWrapper';
 import LanguageSelector from './components/LanguageSelector';
+import packageJson from '../package.json';
 
 const getInitialPanelState = () => {
   if (typeof window === 'undefined') {
@@ -52,7 +53,10 @@ const AppLayout = () => {
   return (
     <div className="flex h-screen flex-col bg-slate-950 text-slate-100">
       <header className="flex flex-wrap items-start gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3">
-        <h1 className="order-1 text-lg font-semibold text-white">{t('header.title')}</h1>
+        <div className="order-1 flex items-baseline gap-2">
+          <h1 className="text-lg font-semibold text-white">{t('header.title')}</h1>
+          <span className="text-xs text-slate-500">v{packageJson.version}</span>
+        </div>
         <div className="order-2 ml-auto flex items-center md:order-3">
           <span className="hidden select-none text-slate-700 md:mr-3 md:inline">|</span>
           <LanguageSelector />
