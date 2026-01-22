@@ -33,9 +33,9 @@ const ViewerToolbar = ({
   const clampedLayer = Math.min(layerSlice, maxLayer);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 bg-slate-900/60 px-4 py-3">
+    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-mocha-800 bg-mocha-900/60 px-4 py-3">
       <div className="flex items-center gap-3">
-        <label className="text-sm text-slate-300" htmlFor="layer-range">
+        <label className="text-sm text-mocha-300" htmlFor="layer-range">
           {t('viewer.displayedLayer')}:{' '}
           <span className="font-semibold text-white">{clampedLayer}</span> /{' '}
           <span>{maxLayer}</span>
@@ -47,7 +47,7 @@ const ViewerToolbar = ({
           max={maxLayer}
           value={clampedLayer}
           onChange={onLayerChange}
-          className="h-2 w-48 cursor-pointer rounded-lg bg-slate-700 accent-brand-light disabled:cursor-not-allowed"
+          className="h-2 w-48 cursor-pointer rounded-lg bg-mocha-700 accent-accent disabled:cursor-not-allowed"
           disabled={maxLayer === 0}
         />
       </div>
@@ -57,7 +57,7 @@ const ViewerToolbar = ({
             type="button"
             onClick={onToggleSidebar}
             aria-expanded={isSidebarOpen ?? false}
-            className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800 lg:hidden"
+            className="rounded-md border border-mocha-700 px-3 py-1 text-sm text-mocha-200 hover:bg-mocha-800 lg:hidden"
           >
             {isSidebarOpen ? t('viewer.hideSidebar') : t('viewer.showSidebar')}
           </button>
@@ -66,28 +66,28 @@ const ViewerToolbar = ({
           type="button"
           onClick={onToggleInfo}
           aria-expanded={isInfoOpen}
-          className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
+          className="rounded-md border border-mocha-700 px-3 py-1 text-sm text-mocha-200 hover:bg-mocha-800"
         >
           {isInfoOpen ? t('viewer.hideInfo') : t('viewer.showInfo')}
         </button>
         <button
           type="button"
           onClick={onZoomToFit}
-          className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
+          className="rounded-md border border-mocha-700 px-3 py-1 text-sm text-mocha-200 hover:bg-mocha-800"
         >
           {t('viewer.zoomToFit')}
         </button>
         <button
           type="button"
           onClick={onResetCamera}
-          className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
+          className="rounded-md border border-mocha-700 px-3 py-1 text-sm text-mocha-200 hover:bg-mocha-800"
         >
           {t('viewer.resetCamera')}
         </button>
         <button
           type="button"
           onClick={onToggleFullscreen}
-          className="rounded-md border border-slate-700 px-3 py-1 text-sm text-slate-200 hover:bg-slate-800"
+          className="rounded-md border border-mocha-700 px-3 py-1 text-sm text-mocha-200 hover:bg-mocha-800"
         >
           {isFullscreen ? t('viewer.exitFullscreen') : t('viewer.fullscreen')}
         </button>

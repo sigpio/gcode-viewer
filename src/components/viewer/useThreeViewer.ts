@@ -1,22 +1,21 @@
 import { useEffect, useRef } from 'react';
-import type { MutableRefObject } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createAxisLabel, disposeGroupChildren } from './sceneUtils';
 import type { InitialCameraState, ThreeContext } from './types';
-import { SCENE_BACKGROUND_COLOR, GRID_PRIMARY_COLOR, GRID_SECONDARY_COLOR, AXIS_X_COLOR, AXIS_Y_COLOR, AXIS_Z_COLOR } from '../../theme/colors';
+import { getThreeColors } from '../../theme/getThreeColors';
 
 type UseThreeViewerParams = {
-  mountRef: React.MutableRefObject<HTMLDivElement | null>;
-  wrapperRef: React.MutableRefObject<HTMLDivElement | null>;
+  mountRef: React.RefObject<HTMLDivElement | null>;
+  wrapperRef: React.RefObject<HTMLDivElement | null>;
 };
 
 export const useThreeViewer = ({
   mountRef,
   wrapperRef
 }: UseThreeViewerParams): {
-  viewerRef: MutableRefObject<ThreeContext | null>;
-  initialCameraRef: MutableRefObject<InitialCameraState | null>;
+  viewerRef: React.RefObject<ThreeContext | null>;
+  initialCameraRef: React.RefObject<InitialCameraState | null>;
 } => {
   const viewerRef = useRef<ThreeContext | null>(null);
   const initialCameraRef = useRef<InitialCameraState | null>(null);
@@ -30,14 +29,17 @@ export const useThreeViewer = ({
     const width = mountElement.clientWidth || 800;
     const height = mountElement.clientHeight || 600;
 
+    // Get current theme colors
+    const colors = getThreeColors();
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(width, height);
-    renderer.setClearColor(SCENE_BACKGROUND_COLOR);
+    renderer.setClearColor(colors.bg);
     mountElement.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(SCENE_BACKGROUND_COLOR);
+    scene.background = colors.bg.clone();
 
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
     camera.up.set(0, 0, 1);
@@ -56,11 +58,25 @@ export const useThreeViewer = ({
     scene.add(ambientLight);
     scene.add(directionalLight);
 
-    const grid = new THREE.GridHelper(400, 40, GRID_PRIMARY_COLOR, GRID_SECONDARY_COLOR);
-    const gridMaterial = grid.material as THREE.Material;
-    gridMaterial.transparent = true;
-    gridMaterial.opacity = 0.18;
-    grid.rotation.x = Math.PI / 2;
+    // Create grid with helper function to recreate it on theme changes
+    const createGrid = () => {
+      const gridColors = getThreeColors();
+      const newGrid = new THREE.GridHelper(400, 40, gridColors.grid, gridColors.grid);
+      const gridMaterial = newGrid.material as THREE.Material;
+      if (Array.isArray(gridMaterial)) {
+        gridMaterial.forEach((mat) => {
+          mat.transparent = true;
+          mat.opacity = 0.18;
+        });
+      } else {
+        gridMaterial.transparent = true;
+        gridMaterial.opacity = 0.18;
+      }
+      newGrid.rotation.x = Math.PI / 2;
+      return newGrid;
+    };
+
+    let grid = createGrid();
     scene.add(grid);
 
     const axes = new THREE.AxesHelper(80);
@@ -68,9 +84,9 @@ export const useThreeViewer = ({
 
     const axisLabels = new THREE.Group();
     const labelDistance = 90;
-    axisLabels.add(createAxisLabel('X', AXIS_X_COLOR, new THREE.Vector3(labelDistance, 0, 0)));
-    axisLabels.add(createAxisLabel('Y', AXIS_Y_COLOR, new THREE.Vector3(0, labelDistance, 0)));
-    axisLabels.add(createAxisLabel('Z', AXIS_Z_COLOR, new THREE.Vector3(0, 0, labelDistance)));
+    axisLabels.add(createAxisLabel('X', colors.axisX.getHexString(), new THREE.Vector3(labelDistance, 0, 0)));
+    axisLabels.add(createAxisLabel('Y', colors.axisY.getHexString(), new THREE.Vector3(0, labelDistance, 0)));
+    axisLabels.add(createAxisLabel('Z', colors.axisZ.getHexString(), new THREE.Vector3(0, 0, labelDistance)));
     scene.add(axisLabels);
 
     const group = new THREE.Group();
@@ -112,8 +128,68 @@ export const useThreeViewer = ({
 
     window.addEventListener('resize', handleResize);
 
+    // Function to update scene colors when theme changes
+    const updateSceneColors = () => {
+      const newColors = getThreeColors();
+      renderer.setClearColor(newColors.bg);
+      if (scene.background instanceof THREE.Color) {
+        scene.background.copy(newColors.bg);
+      }
+      
+      // Update grid material directly - GridHelper has material property
+      const gridMaterial = grid.material as THREE.Material;
+      if (gridMaterial) {
+        if (Array.isArray(gridMaterial)) {
+          gridMaterial.forEach((mat) => {
+            if (mat instanceof THREE.LineBasicMaterial) {
+              mat.color.copy(newColors.grid);
+            }
+          });
+        } else if (gridMaterial instanceof THREE.LineBasicMaterial) {
+          gridMaterial.color.copy(newColors.grid);
+        }
+      }
+      
+      // Update mesh materials in the group (toolpath and travel meshes)
+      group.traverse((child) => {
+        if (child instanceof THREE.Mesh && child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((mat) => {
+            if (mat instanceof THREE.MeshPhysicalMaterial || mat instanceof THREE.MeshStandardMaterial) {
+              // Update color based on mesh type
+              if (child.name.includes('extrusion')) {
+                mat.color.copy(getThreeColors().toolpath);
+              } else if (child.name.includes('travel')) {
+                mat.color.copy(getThreeColors().travel);
+              } else {
+                mat.color.copy(newColors.mesh);
+              }
+            }
+          });
+        }
+      });
+    };
+
+    // Listen for theme changes on html element
+    const themeObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          // Use requestAnimationFrame to ensure DOM has updated before reading CSS
+          window.requestAnimationFrame(() => {
+            updateSceneColors();
+          });
+        }
+      });
+    });
+
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      themeObserver.disconnect();
       if (context.animationId !== null) {
         window.cancelAnimationFrame(context.animationId);
       }

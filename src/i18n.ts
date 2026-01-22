@@ -55,6 +55,12 @@ const resources = {
         label: 'Language',
         english: 'English',
         italian: 'Italian'
+      },
+      theme: {
+        label: 'Theme',
+        light: 'Light',
+        dark: 'Dark',
+        system: 'System'
       }
     }
   },
@@ -111,6 +117,12 @@ const resources = {
         label: 'Lingua',
         english: 'Inglese',
         italian: 'Italiano'
+      },
+      theme: {
+        label: 'Tema',
+        light: 'Chiaro',
+        dark: 'Scuro',
+        system: 'Di sistema'
       }
     }
   }

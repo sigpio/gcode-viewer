@@ -18,18 +18,18 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
   return (
     <aside
       id={id}
-      className={`fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-b border-slate-800 bg-slate-950 transition-transform duration-300 ${
+      className={`fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-b border-mocha-800 bg-mocha-950 transition-transform duration-300 ${
         isOpen ? 'translate-x-0 opacity-100 pointer-events-auto' : '-translate-x-full opacity-0 pointer-events-none'
-      } lg:static lg:h-auto lg:w-80 lg:flex-shrink-0 lg:translate-x-0 lg:border-b-0 lg:border-r lg:border-slate-800 lg:bg-slate-900 lg:opacity-100 lg:pointer-events-auto`}
+      } lg:static lg:h-auto lg:w-80 lg:flex-shrink-0 lg:translate-x-0 lg:border-b-0 lg:border-r lg:border-mocha-800 lg:bg-mocha-900 lg:opacity-100 lg:pointer-events-auto`}
     >
-      <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+      <div className="flex items-center justify-between border-b border-mocha-800 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-mocha-300">
           {t('sidebar.title')}
         </h2>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-400 hover:text-white lg:hidden"
+          className="rounded-md border border-mocha-700 px-2 py-1 text-xs text-mocha-400 hover:text-white lg:hidden"
         >
           {t('sidebar.close')}
         </button>
@@ -37,16 +37,16 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
 
       <div className="scrollbar-brand flex flex-1 flex-col overflow-y-auto">
         {files.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-slate-400">{t('sidebar.empty')}</p>
+          <p className="px-4 py-6 text-sm text-mocha-400">{t('sidebar.empty')}</p>
         ) : (
-          <ul className="divide-y divide-slate-800">
+          <ul className="divide-y divide-mocha-800">
             {files.map((file) => {
               const isActive = file.id === activeFileId;
               return (
                 <li
                   key={file.id}
                   className={`flex items-center gap-3 px-4 py-3 transition ${
-                    isActive ? 'bg-slate-800/60' : ''
+                    isActive ? 'bg-mocha-800/60' : ''
                   }`}
                 >
                   <button
@@ -55,7 +55,7 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
                     className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
                       isActive
                         ? 'border-brand-light bg-brand/20 text-brand-light'
-                        : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-brand-light hover:text-brand-light'
+                        : 'border-mocha-700 bg-mocha-800 text-mocha-400 hover:border-brand-light hover:text-brand-light'
                     }`}
                     title={t('sidebar.view')}
                     aria-pressed={isActive}
@@ -64,14 +64,14 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
                   </button>
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-sm font-medium text-white">{file.name}</span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-mocha-500">
                       {new Date(file.addedAt).toLocaleTimeString()}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeFile(file.id)}
-                    className="rounded-md border border-transparent px-2 py-1 text-xs text-slate-400 hover:border-red-500 hover:text-red-400"
+                    className="rounded-md border border-transparent px-2 py-1 text-xs text-mocha-400 hover:border-red-500 hover:text-red-400"
                   >
                     {t('sidebar.remove')}
                   </button>
@@ -83,7 +83,7 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
       </div>
 
       {files.length > 0 && (
-        <div className="flex flex-col gap-2 border-t border-slate-800 px-4 py-4">
+        <div className="flex flex-col gap-2 border-t border-mocha-800 px-4 py-4">
           <button
             type="button"
             onClick={clearAll}

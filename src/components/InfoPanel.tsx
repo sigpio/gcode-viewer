@@ -100,13 +100,13 @@ const InfoPanel = ({
   return (
     <aside
       aria-label={t('infoPanel.title')}
-      className="fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-t border-slate-800 bg-slate-950 text-slate-200 transition-transform duration-300 lg:static lg:h-full lg:w-80 lg:flex-shrink-0 lg:border-t-0 lg:border-l lg:border-slate-800 lg:bg-slate-900/80"
+      className="fixed inset-0 z-40 flex h-screen w-screen flex-col overflow-hidden border-t border-mocha-800 bg-mocha-950 text-mocha-200 transition-transform duration-300 lg:static lg:h-full lg:w-80 lg:flex-shrink-0 lg:border-t-0 lg:border-l lg:border-mocha-800 lg:bg-mocha-900/80"
     >
-      <header className="flex flex-col gap-3 border-b border-slate-800 px-4 py-3">
+      <header className="flex flex-col gap-3 border-b border-mocha-800 px-4 py-3">
         <div className="flex items-start justify-between gap-2">
           <div>
             <p className="text-sm font-semibold text-white">{t('infoPanel.title')}</p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-mocha-400">
               {t('infoPanel.currentLayer', { current: currentLayer, max: maxLayer })}
             </p>
           </div>
@@ -114,16 +114,16 @@ const InfoPanel = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:text-white lg:hidden"
+              className="rounded-md border border-mocha-700 px-2 py-1 text-xs text-mocha-300 hover:text-white lg:hidden"
             >
               {t('infoPanel.close')}
             </button>
           )}
         </div>
-        <label className="flex items-center gap-2 text-xs text-slate-300">
+        <label className="flex items-center gap-2 text-xs text-mocha-300">
           <input
             type="checkbox"
-            className="h-4 w-4 cursor-pointer rounded border-slate-600 bg-slate-900 text-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light"
+            className="h-4 w-4 cursor-pointer rounded border-mocha-600 bg-mocha-900 text-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light"
             checked={showTravelMoves}
             onChange={(event) => onTravelMovesChange(event.target.checked)}
           />
@@ -132,13 +132,13 @@ const InfoPanel = ({
       </header>
       <div className="scrollbar-brand flex-1 overflow-y-auto px-4 py-4">
         {payload.length === 0 ? (
-          <p className="text-sm text-slate-500">{t('infoPanel.empty')}</p>
+          <p className="text-sm text-mocha-500">{t('infoPanel.empty')}</p>
         ) : (
           <div className="space-y-6">
             {payload.map((file) => (
               <section
                 key={file.name}
-                className="scrollbar-brand flex max-h-[74vh] flex-col overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/70 p-4"
+                className="scrollbar-brand flex max-h-[74vh] flex-col overflow-y-auto rounded-lg border border-mocha-800 bg-mocha-900/70 p-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-white">{file.name}</p>
@@ -150,33 +150,33 @@ const InfoPanel = ({
                 </div>
                 <dl className="mt-3 space-y-2 text-xs">
                   <div className="flex flex-col gap-1">
-                    <dt className="uppercase tracking-wide text-slate-500">
+                    <dt className="uppercase tracking-wide text-mocha-500">
                       {t('infoPanel.totalLayers')}
                     </dt>
-                    <dd className="font-medium text-slate-200">{file.layerCount}</dd>
+                    <dd className="font-medium text-mocha-200">{file.layerCount}</dd>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <dt className="uppercase tracking-wide text-slate-500">
+                    <dt className="uppercase tracking-wide text-mocha-500">
                       {t('infoPanel.totalCommands')}
                     </dt>
-                    <dd className="font-medium text-slate-200">{file.totalCommands}</dd>
+                    <dd className="font-medium text-mocha-200">{file.totalCommands}</dd>
                   </div>
                   {file.estimatedHeight !== null && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">
+                      <dt className="uppercase tracking-wide text-mocha-500">
                         {t('infoPanel.estimatedHeight')}
                       </dt>
-                      <dd className="font-medium text-slate-200">
+                      <dd className="font-medium text-mocha-200">
                         {file.estimatedHeight.toFixed(2)} mm
                       </dd>
                     </div>
                   )}
                   {file.boundsSummary && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">
+                      <dt className="uppercase tracking-wide text-mocha-500">
                         {t('infoPanel.boundingBox')}
                       </dt>
-                      <dd className="font-medium text-slate-200">{file.boundsSummary}</dd>
+                      <dd className="font-medium text-mocha-200">{file.boundsSummary}</dd>
                     </div>
                   )}
                   {file.preferredMetrics.map((metricKey) => {
@@ -184,12 +184,12 @@ const InfoPanel = ({
                     const formattedJson = tryParseJson(rawValue);
                     return (
                       <div key={metricKey} className="flex flex-col gap-1">
-                        <dt className="uppercase tracking-wide text-slate-500">
+                        <dt className="uppercase tracking-wide text-mocha-500">
                           {formatLabel(metricKey)}
                         </dt>
-                        <dd className="font-medium text-slate-200">
+                        <dd className="font-medium text-mocha-200">
                           {formattedJson ? (
-                            <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border border-slate-800 bg-slate-950/80 p-2 font-mono text-[11px] text-slate-300">
+                            <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap rounded-md border border-mocha-800 bg-mocha-950/80 p-2 font-mono text-[11px] text-mocha-300">
                               {formattedJson}
                             </pre>
                           ) : (
@@ -201,14 +201,14 @@ const InfoPanel = ({
                   })}
                   {file.additionalEntries.length > 0 && (
                     <div className="flex flex-col gap-1">
-                      <dt className="uppercase tracking-wide text-slate-500">
+                      <dt className="uppercase tracking-wide text-mocha-500">
                         {t('infoPanel.additionalFields')}
                       </dt>
                       <dd className="space-y-1">
                         {file.additionalEntries.map(([key, value]) => (
-                          <div key={key} className="rounded-md border border-slate-800 bg-slate-950/70 p-2">
-                            <p className="font-semibold text-slate-300">{formatLabel(key)}</p>
-                            <p className="text-slate-200">{value}</p>
+                          <div key={key} className="rounded-md border border-mocha-800 bg-mocha-950/70 p-2">
+                            <p className="font-semibold text-mocha-300">{formatLabel(key)}</p>
+                            <p className="text-mocha-200">{value}</p>
                           </div>
                         ))}
                       </dd>

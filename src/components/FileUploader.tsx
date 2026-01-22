@@ -80,7 +80,7 @@ const FileUploader = () => {
         className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm transition-colors ${
           isDragging
             ? 'border-brand-light bg-brand/20 text-brand-light'
-            : 'border-slate-700 bg-slate-800 hover:bg-slate-700'
+            : 'border-mocha-700 bg-mocha-800 hover:bg-mocha-700'
         }`}
         onDrop={onDrop}
         onDragOver={onDragOver}
@@ -103,7 +103,7 @@ const FileUploader = () => {
         >
           {t('uploader.button')}
         </button>
-        <span className="text-xs text-slate-400">{t('uploader.hint')}</span>
+        <span className="text-xs text-mocha-400">{t('uploader.hint')}</span>
       </div>
     </div>
   );
