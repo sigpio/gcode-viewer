@@ -2,11 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body,
-#root {
-  height: 100%;
+:root {
+  /* MOCHA-TECH LIGHT */
+  --mocha-50: #F8F7F5;
+  --mocha-100: #F0EEEB;
+  --mocha-200: #E4E1DD;
+  --mocha-300: #D7D3CE;
+  --mocha-400: #C2BCB5;
+  --mocha-500: #A79F97;
+  --mocha-600: #8A827A;
+  --mocha-700: #6B645E;
+  --mocha-800: #4C4642;
+  --mocha-900: #2E2A27;
+  --mocha-950: #181615;
+
+  /* 3D LIGHT */
+  --three-bg: var(--mocha-50);
+  --three-grid: #D2D0CC;
+  --three-axis-x: #FF4B4B;
+  --three-axis-y: #4CAF50;
+  --three-axis-z: #3A6EE8;
+  --three-mesh: var(--mocha-500);
+  --three-toolpath: #E68A4A;
+  --three-travel: #AFAAA5;
+
+  --three-axis-label-bg: var(--mocha-800);
+  --three-axis-label-text: var(--mocha-50);
+
+  --color-scrollbar-primary: var(--mocha-400);
+  --color-scrollbar-hover: var(--mocha-500);
+
+  --color-accent: var(--mocha-500);
 }
+
+
+.dark {
+  /* MOCHA-TECH DARK */
+  --mocha-50: #EDECEA;
+  --mocha-100: #D6D4D1;
+  --mocha-200: #B9B6B2;
+  --mocha-300: #9C9893;
+  --mocha-400: #7F7B76;
+  --mocha-500: #63605C;
+  --mocha-600: #4A4744;
+  --mocha-700: #343230;
+  --mocha-800: #1F1D1C;
+  --mocha-900: #141312;
+  --mocha-950: #0A0A09;
+
+  /* 3D DARK */
+  --three-bg: var(--mocha-950);
+  --three-grid: #2A2A2A;
+  --three-axis-x: #FF6A6A;
+  --three-axis-y: #6CD96C;
+  --three-axis-z: #5A82E8;
+  --three-mesh: #5a5050;
+  --three-toolpath: #E68A4A;
+  --three-travel: #6A6764;
+
+  --color-scrollbar-primary: var(--mocha-600);
+}
+
+
 
 body {
   overflow-y: hidden;
@@ -15,7 +72,7 @@ body {
 @layer utilities {
   .scrollbar-brand {
     scrollbar-width: thin;
-    scrollbar-color: rgba(59, 130, 246, 0.6) transparent;
+    scrollbar-color: var(--color-scrollbar-primary) transparent;
   }
 
   .scrollbar-brand::-webkit-scrollbar {
@@ -28,13 +85,13 @@ body {
   }
 
   .scrollbar-brand::-webkit-scrollbar-thumb {
-    background-color: rgba(59, 130, 246, 0.6);
+    background-color: var(--color-scrollbar-primary);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   .scrollbar-brand::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(59, 130, 246, 0.85);
+    background-color: var(--color-scrollbar-hover);
   }
 }

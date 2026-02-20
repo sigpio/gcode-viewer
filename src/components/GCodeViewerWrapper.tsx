@@ -13,7 +13,6 @@ import InfoPanel from './InfoPanel';
 import { useTranslation } from 'react-i18next';
 import type { ParsedFile } from './viewer/types';
 import {
-  DEFAULT_TOOLPATH_COLOR,
   EXTRUSION_RADIUS,
   TRAVEL_RADIUS,
   collectSegments,
@@ -24,6 +23,7 @@ import { disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
 import { useThreeViewer } from './viewer/useThreeViewer';
 import ViewerToolbar from './viewer/ViewerToolbar';
 import ParseErrorBanner from './viewer/ParseErrorBanner';
+import { getThreeColors, getThreeToolpathColor } from '../theme/getThreeColors';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -184,7 +184,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
 
     const extrusionMesh = createSegmentMesh(extrudingSegments, {
       radius: EXTRUSION_RADIUS,
-      color: DEFAULT_TOOLPATH_COLOR,
+      color: getThreeToolpathColor(),
       metalness: 0.25,
       roughness: 0.35
     });
@@ -195,10 +195,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     }
 
     if (travelSegments.length > 0) {
-      const travelColor = new THREE.Color(DEFAULT_TOOLPATH_COLOR).lerp(
-        new THREE.Color('#94a3b8'),
-        0.7
-      );
+      const travelColor = getThreeColors().travel;
       const travelMesh = createSegmentMesh(travelSegments, {
         radius: TRAVEL_RADIUS,
         color: travelColor,
@@ -308,7 +305,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
         ? [
             {
               name: parsedResult.data.meta.name,
-              color: DEFAULT_TOOLPATH_COLOR,
+              color: `#${getThreeToolpathColor().getHexString()}`,
               layers: parsedResult.data.layers,
               estimatedHeight: parsedResult.data.estimatedHeight,
               bounds: parsedResult.data.bounds,
@@ -337,7 +334,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
           isSidebarOpen={isSidebarOpen}
           t={t}
         />
-        <div ref={wrapperRef} className="relative flex flex-1 bg-slate-950">
+        <div ref={wrapperRef} className="relative flex flex-1 bg-mocha-950">
           <div ref={mountRef} className="h-full w-full" />
           {parseError && <ParseErrorBanner message={parseError} />}
         </div>
