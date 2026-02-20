@@ -76,7 +76,7 @@ export const useThreeViewer = ({
       return newGrid;
     };
 
-    let grid = createGrid();
+    const grid = createGrid();
     scene.add(grid);
 
     const axes = new THREE.AxesHelper(80);
@@ -84,9 +84,17 @@ export const useThreeViewer = ({
 
     const axisLabels = new THREE.Group();
     const labelDistance = 90;
-    axisLabels.add(createAxisLabel('X', colors.axisX.getHexString(), new THREE.Vector3(labelDistance, 0, 0)));
-    axisLabels.add(createAxisLabel('Y', colors.axisY.getHexString(), new THREE.Vector3(0, labelDistance, 0)));
-    axisLabels.add(createAxisLabel('Z', colors.axisZ.getHexString(), new THREE.Vector3(0, 0, labelDistance)));
+
+    const createAxisLabels = () => {
+      const labelColors = getThreeColors();
+      return [
+        createAxisLabel('X', labelColors.axisX.getHexString(), new THREE.Vector3(labelDistance, 0, 0)),
+        createAxisLabel('Y', labelColors.axisY.getHexString(), new THREE.Vector3(0, labelDistance, 0)),
+        createAxisLabel('Z', labelColors.axisZ.getHexString(), new THREE.Vector3(0, 0, labelDistance))
+      ];
+    };
+
+    createAxisLabels().forEach((label) => axisLabels.add(label));
     scene.add(axisLabels);
 
     const group = new THREE.Group();
@@ -168,6 +176,10 @@ export const useThreeViewer = ({
           });
         }
       });
+
+      // Recreate axis labels with new colors
+      disposeGroupChildren(axisLabels);
+      createAxisLabels().forEach((label) => axisLabels.add(label));
     };
 
     // Listen for theme changes on html element

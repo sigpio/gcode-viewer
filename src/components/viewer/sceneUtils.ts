@@ -62,13 +62,21 @@ export const createAxisLabel = (
   if (!context) {
     throw new Error('Canvas 2D context non disponibile.');
   }
+
+  const bgColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--three-axis-label-bg')
+    .trim() || '#4C4642';
+  const textColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--three-axis-label-text')
+    .trim() || '#F8F7F5';
+
   context.clearRect(0, 0, size, size);
-  context.fillStyle = 'rgba(15, 23, 42, 0.85)';
+  context.fillStyle = bgColor;
   context.fillRect(0, 0, size, size);
   context.strokeStyle = color;
   context.lineWidth = 6;
   context.strokeRect(12, 12, size - 24, size - 24);
-  context.fillStyle = color;
+  context.fillStyle = textColor;
   context.font = 'bold 72px "Segoe UI", sans-serif';
   context.textAlign = 'center';
   context.textBaseline = 'middle';

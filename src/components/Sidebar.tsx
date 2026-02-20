@@ -54,8 +54,8 @@ const Sidebar = ({ id, isOpen, onClose }: SidebarProps) => {
                     onClick={() => handleSelect(file.id)}
                     className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border text-xs font-semibold transition-colors ${
                       isActive
-                        ? 'border-brand-light bg-brand/20 text-brand-light'
-                        : 'border-mocha-700 bg-mocha-800 text-mocha-400 hover:border-brand-light hover:text-brand-light'
+                        ? 'border-accent bg-accent/20 text-accent'
+                        : 'border-mocha-700 bg-mocha-800 text-mocha-400 hover:border-accent hover:text-accent'
                     }`}
                     title={t('sidebar.view')}
                     aria-pressed={isActive}

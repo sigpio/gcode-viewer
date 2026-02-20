@@ -17,29 +17,22 @@
   --mocha-950: #181615;
 
   /* 3D LIGHT */
-  --three-bg: #F8F7F5;
-  /* quasi bianco tecnico */
+  --three-bg: var(--mocha-50);
   --three-grid: #D2D0CC;
-  /* griglia neutra */
   --three-axis-x: #FF4B4B;
-  /* rosso tecnico X */
   --three-axis-y: #4CAF50;
-  /* verde standard Y */
   --three-axis-z: #3A6EE8;
-  /* blu ingegneristico Z */
-  --three-mesh: #A79F97;
-  /* neutro tecnico */
+  --three-mesh: var(--mocha-500);
   --three-toolpath: #E68A4A;
-  /* estrusione tecnica */
   --three-travel: #AFAAA5;
-  /* travel neutro */
 
-  --color-scrollbar-primary: #C2BCB5;
-  --color-scrollbar-hover: #A79F97;
+  --three-axis-label-bg: var(--mocha-800);
+  --three-axis-label-text: var(--mocha-50);
 
-  /* ACCENT COLOR */
-  --color-accent: #A79F97;
-  /* mocha-500 light */
+  --color-scrollbar-primary: var(--mocha-400);
+  --color-scrollbar-hover: var(--mocha-500);
+
+  --color-accent: var(--mocha-500);
 }
 
 
@@ -58,29 +51,16 @@
   --mocha-950: #0A0A09;
 
   /* 3D DARK */
-  --three-bg: #0A0A09;
-  /* dark tecnico */
+  --three-bg: var(--mocha-950);
   --three-grid: #2A2A2A;
-  /* griglia neutra scura */
   --three-axis-x: #FF6A6A;
-  /* rosso tecnico X */
   --three-axis-y: #6CD96C;
-  /* verde tecnico Y */
   --three-axis-z: #5A82E8;
-  /* blu tecnico Z */
   --three-mesh: #5a5050;
-  /* neutro tecnico scuro */
   --three-toolpath: #E68A4A;
-  /* estrusione tecnica */
   --three-travel: #6A6764;
-  /* travel neutro scuro */
 
-  --color-scrollbar-primary: #4A4744;
-  --color-scrollbar-hover: #63605C;
-
-  /* ACCENT COLOR */
-  --color-accent: #63605C;
-  /* mocha-500 dark */
+  --color-scrollbar-primary: var(--mocha-600);
 }
 
 

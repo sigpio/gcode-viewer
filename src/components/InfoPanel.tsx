@@ -123,7 +123,7 @@ const InfoPanel = ({
         <label className="flex items-center gap-2 text-xs text-mocha-300">
           <input
             type="checkbox"
-            className="h-4 w-4 cursor-pointer rounded border-mocha-600 bg-mocha-900 text-brand-light focus:outline-none focus:ring-1 focus:ring-brand-light"
+            className="h-4 w-4 cursor-pointer rounded border-mocha-600 bg-mocha-900 accent-accent focus:outline-none focus:ring-1 focus:ring-accent"
             checked={showTravelMoves}
             onChange={(event) => onTravelMovesChange(event.target.checked)}
           />

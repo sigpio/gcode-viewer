@@ -17,7 +17,7 @@ const LanguageSelector = () => {
       <select
         value={currentLanguage}
         onChange={handleChange}
-        className="rounded-md border border-mocha-700 bg-mocha-800 px-2 py-1 text-sm text-mocha-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-light"
+        className="rounded-md border border-mocha-700 bg-mocha-800 px-2 py-1 text-sm text-mocha-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         <option value="en">{t('language.english')}</option>
         <option value="it">{t('language.italian')}</option>

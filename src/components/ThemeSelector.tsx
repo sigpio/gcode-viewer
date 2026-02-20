@@ -1,22 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type ThemeMode = 'light' | 'dark' | 'system';
 
 const ThemeSelector = () => {
   const { t } = useTranslation();
-  const [theme, setTheme] = useState<ThemeMode>('system');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'system';
+    return (localStorage.getItem('theme') as ThemeMode | null) ?? 'system';
+  });
 
-  // Carica il tema salvato dal localStorage al mount
-  useEffect(() => {
-    const savedTheme = (localStorage.getItem('theme') as ThemeMode | null) ?? 'system';
-    setTheme(savedTheme);
-    applyTheme(savedTheme);
-    setMounted(true);
-  }, []);
-
-  const applyTheme = (mode: ThemeMode) => {
+  const applyTheme = useCallback((mode: ThemeMode) => {
     const html = document.documentElement;
     const isDarkSystemPreference =
       window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -26,14 +20,17 @@ const ThemeSelector = () => {
     } else if (mode === 'light') {
       html.classList.remove('dark');
     } else {
-      // system
       if (isDarkSystemPreference) {
         html.classList.add('dark');
       } else {
         html.classList.remove('dark');
       }
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [applyTheme, theme]);
 
   const handleThemeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newTheme = event.target.value as ThemeMode;
@@ -42,7 +39,6 @@ const ThemeSelector = () => {
     applyTheme(newTheme);
   };
 
-  // Monitora i cambiamenti di preferenza di sistema quando è in modalità system
   useEffect(() => {
     if (theme !== 'system') {
       return;
@@ -55,11 +51,7 @@ const ThemeSelector = () => {
 
     mediaQuery.addEventListener('change', handleSystemThemeChange);
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
-  }, [theme]);
-
-  if (!mounted) {
-    return null; // Evita hydration mismatch
-  }
+  }, [theme, applyTheme]);
 
   return (
     <label className="flex items-center gap-2 text-sm text-mocha-300">

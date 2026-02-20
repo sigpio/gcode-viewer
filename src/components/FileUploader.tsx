@@ -79,7 +79,7 @@ const FileUploader = () => {
       <div
         className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm transition-colors ${
           isDragging
-            ? 'border-brand-light bg-brand/20 text-brand-light'
+            ? 'border-accent bg-accent/20 text-accent'
             : 'border-mocha-700 bg-mocha-800 hover:bg-mocha-700'
         }`}
         onDrop={onDrop}

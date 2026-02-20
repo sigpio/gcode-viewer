@@ -23,7 +23,7 @@ import { disposeGroupChildren, fitCameraToBox } from './viewer/sceneUtils';
 import { useThreeViewer } from './viewer/useThreeViewer';
 import ViewerToolbar from './viewer/ViewerToolbar';
 import ParseErrorBanner from './viewer/ParseErrorBanner';
-import { getThreeToolpathColor } from '../theme/getThreeColors';
+import { getThreeColors, getThreeToolpathColor } from '../theme/getThreeColors';
 
 type ViewerProps = {
   readonly file: GCodeFileRecord | null;
@@ -195,10 +195,7 @@ const GCodeViewerWrapper = ({ file, onToggleSidebar, isSidebarOpen }: ViewerProp
     }
 
     if (travelSegments.length > 0) {
-      const travelColor = new THREE.Color(getThreeToolpathColor()).lerp(
-        new THREE.Color('#94a3b8'),
-        0.7
-      );
+      const travelColor = getThreeColors().travel;
       const travelMesh = createSegmentMesh(travelSegments, {
         radius: TRAVEL_RADIUS,
         color: travelColor,
