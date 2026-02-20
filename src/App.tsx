@@ -5,6 +5,7 @@ import FileUploader from './components/FileUploader';
 import Sidebar from './components/Sidebar';
 import GCodeViewerWrapper from './components/GCodeViewerWrapper';
 import LanguageSelector from './components/LanguageSelector';
+import ThemeSelector from './components/ThemeSelector';
 import packageJson from '../package.json';
 
 const getInitialPanelState = () => {
@@ -42,14 +43,15 @@ const AppLayout = () => {
   }, []);
 
   return (
-    <div className="flex h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="flex flex-wrap items-start gap-3 border-b border-slate-800 bg-slate-900 px-4 py-3">
+    <div className="flex h-screen flex-col bg-mocha-950 text-mocha-100">
+      <header className="flex flex-wrap items-start gap-3 border-b border-mocha-800 bg-mocha-900 px-4 py-3">
         <div className="order-1 flex items-baseline gap-2">
           <h1 className="text-lg font-semibold text-white">{t('header.title')}</h1>
-          <span className="text-xs text-slate-500">v{packageJson.version}</span>
+          <span className="text-xs text-mocha-500">v{packageJson.version}</span>
         </div>
-        <div className="order-2 ml-auto flex items-center md:order-3">
-          <span className="hidden select-none text-slate-700 md:mr-3 md:inline">|</span>
+        <div className="order-2 ml-auto flex items-center gap-3 md:order-3">
+          <ThemeSelector />
+          <span className="hidden select-none text-mocha-700 md:mr-1 md:inline">|</span>
           <LanguageSelector />
         </div>
         <div className="order-3 w-full md:order-2 md:w-auto">
@@ -65,15 +67,15 @@ const AppLayout = () => {
         />
         <main className="relative flex flex-1 flex-col overflow-hidden">
           {files.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center text-slate-400">
-              <p className="text-lg font-medium text-slate-300">
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center text-mocha-400">
+              <p className="text-lg font-medium text-mocha-300">
                 {t('header.noFilesTitle')}
               </p>
               <p className="max-w-md text-sm">{t('header.noFilesDescription')}</p>
             </div>
           ) : !activeFile ? (
-            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center text-slate-400">
-              <p className="text-lg font-medium text-slate-300">{t('header.noActiveTitle')}</p>
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center text-mocha-400">
+              <p className="text-lg font-medium text-mocha-300">{t('header.noActiveTitle')}</p>
             </div>
           ) : (
             <GCodeViewerWrapper
